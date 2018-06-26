@@ -195,7 +195,7 @@ def annotateregion(start, end, DIC):
 # 3. Exons and Introns 
 
 def processannotation(returnanno, plusminus, previous):
-    #print(returnanno)
+    print(returnanno)
     astringvec = returnanno[0]
     startexon = returnanno[1]
     endexon = returnanno[2]
@@ -440,7 +440,8 @@ for indext in transcriptlines:
     end_trans = int(temp[4])
     
     # Obtain coverage for the transcript
-    description = temp[8].split("\"; ")[2]
+    print(temp)
+    description = temp[8].split("\"; ")[3]
     coverage = float(description.split(" \"")[1])
     
     # Obtain the transcriptID
@@ -535,7 +536,7 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == 0:
-                        description = temp[8].split("\"; ")[3]
+                        description = temp[8].split("\"; ")[4]
                         exon1coverage = float(description.split(" \"")[1].strip("\";"))
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
@@ -617,7 +618,7 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == (len(cluster)-2):
-                        description = temp[8].split("\"; ")[3]
+                        description = temp[8].split("\"; ")[4]
                         exon1coverage = float(description.split(" \"")[1].strip("\";"))
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
