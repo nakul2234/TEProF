@@ -11,7 +11,7 @@ import math
 import copy
 import tabix
 
-rmsk = tabix.open('/bar/nshah/reference/rmsk.bed6.gz')
+rmsk = tabix.open('/bar/nshah/reference/rmskhg38.bed6.gz')
 input = sys.argv[1]
 peaktotalsize = 0 #Will be added up from the bed/peak file
 
@@ -79,9 +79,9 @@ def annotate(start, DIC):
 def annotateintron(chromosome, start, end, strand):
 
     if strand == "+":
-        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25lift37.annotation_introns_plus_sorted.bed.gz')
+        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_plus_sorted.gz')
     else:
-        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25lift37.annotation_introns_minus_sorted.bed.gz')
+        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_minus_sorted.gz')
     res = []
     tmp = ''
     try:
@@ -168,12 +168,12 @@ def annotateregion(start, end, DIC):
                     overlapbw2 = getOverlap([start, end], [element[0], element[1]])
                     if overlapbw2 > 0:
                         startelement = DIC[transcript][element]
-                        transcriptstart = str(transcript[0])
-                        transcriptend = str(transcript[1])
-                        elementlistprint = ",".join(elementlist)
-            
-                        coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlistprint, overlappercentage]))
-                        allannotation.append(coordinateanno)
+            transcriptstart = str(transcript[0])
+            transcriptend = str(transcript[1])
+            elementlistprint = ",".join(elementlist)
+
+            coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlistprint, overlappercentage]))
+            allannotation.append(coordinateanno)
     
     if elementlist == "None":
         coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlist, overlappercentage]))
@@ -404,13 +404,13 @@ num_lines = len(lines)
     
 # Load up the genecode dictionaries
 plus_dic = {}
-with open("/bar/nshah/reference/genecode_plus.dic",'r') as DIC:
+with open("/bar/nshah/reference/genecode_plus_hg38.dic",'r') as DIC:
     plus_dic = pickle.load(DIC)
 
 DIC.close()
 
 minus_dic = {}
-with open("/bar/nshah/reference/genecode_minus.dic",'r') as DIC:
+with open("/bar/nshah/reference/genecode_minus_hg38.dic",'r') as DIC:
     minus_dic = pickle.load(DIC)
 
 DIC.close()
@@ -421,6 +421,10 @@ lines.pop(0)
 
 fout=open('{}_annotated_test'.format(sys.argv[1]),'w')
 fout1=open('{}_annotated_filtered_test'.format(sys.argv[1]),'w') 
+
+fout_a=open('{}_annotated_test_all'.format(sys.argv[1]),'w')
+fout1_a=open('{}_annotated_filtered_test_all'.format(sys.argv[1]),'w') 
+
 j = 0
 # Iterate through the GTF lines and annotate each transcript based on repeatmasker and gencode. Only print those out that begin within a transposable element
 for indext in transcriptlines:
@@ -440,8 +444,12 @@ for indext in transcriptlines:
     end_trans = int(temp[4])
     
     # Obtain coverage for the transcript
-    description = temp[8].split("\"; ")[2]
-    coverage = float(description.split(" \"")[1])
+    description = temp[8].split("cov \"")[1]
+    coverage = float(description.split("\";")[0])
+    
+    # Obtain TPM for the transcript
+    description = temp[8].split("TPM \"")[1]
+    tpmtranscript = float(description.split("\";")[0])
     
     # Obtain the transcriptID
     transcriptinfo = temp[8].split("\"; ")[1]
@@ -535,8 +543,8 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == 0:
-                        description = temp[8].split("\"; ")[3]
-                        exon1coverage = float(description.split(" \"")[1].strip("\";"))
+                        description = temp[8].split("cov \"")[1]
+                        exon1coverage = float(description.split("\";")[0])
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
                     exonstarts.append(start)
@@ -582,8 +590,15 @@ for indext in transcriptlines:
                 genomiclocations.append(str(exonends[x]))
                 x = x + 1
             locationreturn = ",".join(genomiclocations)
-            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [str(locationreturn)] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage)]
+            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [str(locationreturn)] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage), str(tpmtranscript)]
             stringreturn = "\t".join(annotationreturn)
+            
+            print >> fout_a, stringreturn
+            if splicing == "Yes":
+                    if tendannotation[5] == "exon":
+                            if tendannotation[0] == "protein_coding":
+                                    if transcriptTE[0] != "None":
+                                        print >> fout1_a, stringreturn
             
             #print tstartannotation
             #print tendannotation
@@ -617,8 +632,8 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == (len(cluster)-2):
-                        description = temp[8].split("\"; ")[3]
-                        exon1coverage = float(description.split(" \"")[1].strip("\";"))
+                        description = temp[8].split("cov \"")[1]
+                        exon1coverage = float(description.split("\";")[0])
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
                     exonstarts.append(start)
@@ -663,8 +678,15 @@ for indext in transcriptlines:
                 genomiclocations.append(str(exonends[x]))
                 x = x + 1
             locationreturn = ",".join(genomiclocations)
-            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [locationreturn] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage)]
+            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [locationreturn] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage), str(tpmtranscript)]
             stringreturn = "\t".join(annotationreturn)
+            
+            print >> fout_a, stringreturn
+            if splicing == "Yes":
+                    if tendannotation[5] == "exon":
+                            if tendannotation[0] == "protein_coding":
+                                    if transcriptTE[0] != "None":
+                                        print >> fout1_a, stringreturn
             
             if tendannotation[1] in oncogenelist:
                 print >> fout, stringreturn
