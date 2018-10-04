@@ -319,10 +319,9 @@ def processannotation(returnanno, plusminus, previous):
                 #Gets the elements that the start index is actually in. Then these elements are 
                 startindicesbw = []
                 startindicesbw = [i for i,x in enumerate(zip(start,end)) if x[0] <= startexon and x[1] >= startexon]
-                
                 if plusminus == "minus":
                     startindicesbw = [i for i,x in enumerate(zip(start,end)) if x[0] <= endexon and x[1] >= endexon]
-                   
+                    
                 if startindicesbw:
                     if "exon" in [exonintron[b] for b in startindicesbw]:
                         exonindices = [i for i,x in enumerate(exonintron) if x == "exon" and i in startindicesbw]
@@ -440,7 +439,6 @@ for indext in transcriptlines:
     # Obtain pertinent transcript information
     chr_trans = temp[0]
     
-    
     #Should be changed to allow for other chromosome species. The user should be able to define the allowed set of chromosomes
     
     allowedchr = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY']
@@ -452,17 +450,9 @@ for indext in transcriptlines:
     start_trans = int(temp[3])
     end_trans = int(temp[4])
     
-    # Obtain coverage for the transcript
-    description = temp[8].split("cov \"")[1]
-    coverage = float(description.split("\";")[0])
-    
-    # Obtain TPM for the transcript
-    description = temp[8].split("TPM \"")[1]
-    tpmtranscript = float(description.split("\";")[0])
-    
-    # Obtain the transcriptID
-    transcriptinfo = temp[8].split("\"; ")[1]
-    transcriptid = transcriptinfo.split(" \"")[1]
+    # Obtain the transcriptid from cufflinks
+    description = temp[8].split("ID=")[1]
+    transcriptid = description.split(";")[0]
     
     # Variable that will let the program know whether to perform the expensive operation of genecode annotation
     skip = False
@@ -514,9 +504,11 @@ for indext in transcriptlines:
         transcriptTE = subfam[0]
         subfamTE = transcriptTE[3]
         
-        # I want to specifically look at TE for now, but maybe others later.
-        if subfamTE not in TE.keys():
-            transcriptTE = ["None", "None", "None", "None", "None", "None"]
+        # This code was present in previous versions in order to look only at TEs based on a list of TEs defined by the user
+        # However, this limits the flexibility of the analysis. The user defines the repeatmasker file and thus all repeatmasker elements can be looked at and downstream the user can filter on TEs that they want
+        #
+        # if subfamTE not in TE.keys():
+        #   transcriptTE = ["None", "None", "None", "None", "None", "None"]
              
     # Figure out where the transcript ends    
     if j == num_transcripts - 1:
@@ -552,8 +544,6 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == 0:
-                        description = temp[8].split("cov \"")[1]
-                        exon1coverage = float(description.split("\";")[0])
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
                     exonstarts.append(start)
@@ -599,7 +589,7 @@ for indext in transcriptlines:
                 genomiclocations.append(str(exonends[x]))
                 x = x + 1
             locationreturn = ",".join(genomiclocations)
-            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [str(locationreturn)] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage), str(tpmtranscript)]
+            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [str(locationreturn)] + [firstintronanno] + transcriptTE + [strand]
             stringreturn = "\t".join(annotationreturn)
             
             print >> fout_a, stringreturn
@@ -641,8 +631,6 @@ for indext in transcriptlines:
                     transcriptend = end
                 else:
                     if i == (len(cluster)-2):
-                        description = temp[8].split("cov \"")[1]
-                        exon1coverage = float(description.split("\";")[0])
                         exon1start = int(temp[3])
                         exon1end = int(temp[4])
                     exonstarts.append(start)
@@ -687,7 +675,7 @@ for indext in transcriptlines:
                 genomiclocations.append(str(exonends[x]))
                 x = x + 1
             locationreturn = ",".join(genomiclocations)
-            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [locationreturn] + [firstintronanno] + transcriptTE + [strand, str(coverage), str(exon1coverage), str(tpmtranscript)]
+            annotationreturn = [transcriptid] + tstartannotation + [splicing] + tendannotation + [chromosome] + [str(transcriptstart)] + [str(transcriptend)] + [locationreturn] + [firstintronanno] + transcriptTE + [strand]
             stringreturn = "\t".join(annotationreturn)
             
             print >> fout_a, stringreturn

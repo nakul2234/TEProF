@@ -6,12 +6,6 @@ import sys
 
 distbuffer = 1000
 
-folderdic = {}
-with open("/scratch/twlab/nshah/TCGA_IDs_folder","r") as foldertcga:
-	for eachline in foldertcga:
-		temp = eachline.strip().split("\t")
-		folderdic[temp[0]] = temp[1]
-
 # This is the rest of the command that will create a searchable tabix file for downstream analysis
 
 
@@ -27,16 +21,15 @@ with open(sys.argv[1],"r") as filteredfile:
 		chromosome = temp[31]
 		startlocTE = temp[32]
 		endlocTE = temp[33]
-		filename = temp[44]
-		folder = temp[48]
-		uniqid = temp[57]
+		filename = temp[41]
+		uniqid = temp[52]
 		strand = temp[37]
 
 		if location == 'intron':
 			elementvecint = [int(x) for x in elementsvec.split(',')]
 			startloc = min(elementvecint) - distbuffer
 			endloc = max(elementvecint) + distbuffer
-			commandroot = 'samtools view -q 255 -h -f 2 -F 4 /ref/tcga/' + folderdic[folder] + '/' + folder + "/*/" + filename + '_gdc_realn_rehead.bam ' + chromosome + ':' + str(startloc) + '-' + str(endloc) + " > " + uniqid + '--' + filename + ".sam" + ' ; samtools view -q 255 -f 2 -F 4 /ref/tcga/' + folderdic[folder] + '/' + folder + "/*/" + filename + '_gdc_realn_rehead.bam ' + chromosome + ':' + str(startlocTE) + '-' + str(endlocTE) + ' | cut -f1  | sort | uniq > ' + uniqid + '--' + filename + 'IDs.txt ; cat <(samtools view -H ' + uniqid + '--' + filename + '.sam) <(grep -w -F -f ' + uniqid + '--' + filename + 'IDs.txt ' + uniqid + '--' + filename + '.sam)'
+			commandroot = 'samtools view -q 255 -h -f 2 -F 4 ../aligned/' + filename + '.bam ' + chromosome + ':' + str(startloc) + '-' + str(endloc) + " > " + uniqid + '--' + filename + ".sam" + ' ; samtools view -q 255 -h -f 2 -F 4 ../aligned/' + filename + '.bam ' + chromosome + ':' + str(startlocTE) + '-' + str(endlocTE) + ' | cut -f1  | sort | uniq > ' + uniqid + '--' + filename + 'IDs.txt ; cat <(samtools view -H ' + uniqid + '--' + filename + '.sam) <(grep -w -F -f ' + uniqid + '--' + filename + 'IDs.txt ' + uniqid + '--' + filename + '.sam)'
 		else:
 			strand = temp[37]
 			elementvecint = [int(x) for x in elementsvec.split(',')]
@@ -46,10 +39,10 @@ with open(sys.argv[1],"r") as filteredfile:
 			else:
 				startloc = min(elementvecint) - distbuffer
 				endloc = int(temp[33]) + distbuffer
-			commandroot = 'samtools view -q 255 -h -f 2 -F 4 /ref/tcga/' + folderdic[folder] + '/' + folder + "/*/" + filename + '_gdc_realn_rehead.bam ' + chromosome + ':' + str(startloc) + '-' + str(endloc) + " > " + uniqid + '--' + filename + ".sam" + ' ; samtools view -q 255 -f 2 -F 4 /ref/tcga/' + folderdic[folder] + '/' + folder + "/*/" + filename + '_gdc_realn_rehead.bam ' + chromosome + ':' + str(startlocTE) + '-' + str(endlocTE) + ' | cut -f1  | sort | uniq > ' + uniqid + '--' + filename + 'IDs.txt ; cat <(samtools view -H ' + uniqid + '--' + filename + '.sam) <(grep -w -F -f ' + uniqid + '--' + filename + 'IDs.txt ' + uniqid + '--' + filename + '.sam)'
+			commandroot = 'samtools view -q 255 -h -f 2 -F 4 ../aligned/' + filename + '.bam ' + chromosome + ':' + str(startloc) + '-' + str(endloc) + " > " + uniqid + '--' + filename + ".sam" + ' ; samtools view -q 255 -h -f 2 -F 4 ../aligned/' + filename + '.bam ' + chromosome + ':' + str(startlocTE) + '-' + str(endlocTE) + ' | cut -f1  | sort | uniq > ' + uniqid + '--' + filename + 'IDs.txt ; cat <(samtools view -H ' + uniqid + '--' + filename + '.sam) <(grep -w -F -f ' + uniqid + '--' + filename + 'IDs.txt ' + uniqid + '--' + filename + '.sam)'
 
 
-		commandfinish = ' | samtools sort -n -m 1G - | bedtools bamtobed -bedpe -i stdin 2>/dev/null | ~/scripts/rmsk_annotate_bedpe_speed.py ' + chromosome + ',' + startlocTE + ',' + endlocTE + ' ' + elementsvec + ' ' + strand + ' ' + number1 + ' ' + number2 + ' > ../filterreadstats/' +  uniqid + '--' + filename + ".stats ; " + "rm " +  uniqid + '--' + filename + ".sam ; rm " +  uniqid + '--' + filename + 'IDs.txt'
+		commandfinish = ' | samtools sort -n -m 1G - | bedtools bamtobed -bedpe -i stdin 2>/dev/null | ~/programs/rnapipeline/rmsk_annotate_bedpe_speed.py ' + chromosome + ',' + startlocTE + ',' + endlocTE + ' ' + elementsvec + ' ' + strand + ' ' + number1 + ' ' + number2 + ' > ../filterreadstats/' +  uniqid + '--' + filename + ".stats ; " + "rm " +  uniqid + '--' + filename + ".sam ; rm " +  uniqid + '--' + filename + 'IDs.txt'
 	
 		commandall = commandroot + commandfinish
 		print >> fout, commandall
