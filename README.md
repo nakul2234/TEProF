@@ -207,10 +207,13 @@ rmskhg38_annotate_gtf_update_test_tpm.py <gtffile> <argumentfile.txt*>
 
 Description of Output File(s):
 
-(1) <gtffile>_annotated_test_all
-(2) <gtffile>_annotated_filtered_test_all
-(3) <gtffile>_annotated_test*
-(4) <gtffile>_annotated_filtered_test*
+(1) \<gtffile\>_annotated_test_all
+ 
+(2) \<gtffile\>_annotated_filtered_test_all
+ 
+(3) \<gtffile\>_annotated_test*
+ 
+(4) \<gtffile\>_annotated_filtered_test*
  
  * Files (3) and (4) will only be produced if the user would like to focus the analysis on a set of genes such as a list of oncogenes and tumor suppresor genes
 
