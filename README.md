@@ -174,9 +174,12 @@ minusintron	/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_minus
 
 ### Required Arguments
 
-rmsk: tabix formatted bed6 files with repeatmasker or other file that user wants to check start location for
-gencodeplusdic: Dictionary of all gencode elements including introns and exons for the plus (+) strand
-gencodeminusdic: Dictionary of all gencode elements including introns and exons for the minus (-) strand
+**rmsk:** tabix formatted bed6 files with repeatmasker or other file that user wants to check start location for
+
+**gencodeplusdic:** Dictionary of all gencode elements including introns and exons for the plus (+) strand
+
+**gencodeminusdic:** Dictionary of all gencode elements including introns and exons for the minus (-) strand
+
 
 Note:
 > These are all the arguments that are needed. The following arguments.txt file would work:
@@ -189,9 +192,11 @@ gencodeminusdic	/bar/nshah/reference/genecode_minus_hg38.dic
 
 ### Optional Arguments
 
-focusgenes: The program has two outputs (1) on a focus set of genes (2) with all genes. This file lists the genes that the user wants to filter for originally (Gene Filter List)
-plusintron: Tabix file of all the plus strand introns (Intron Annotations)
-minusintron: Tabix file of all the minus strand introns (Intron Annotations)
+**focusgenes:** The program has two outputs (1) on a focus set of genes (2) with all genes. This file lists the genes that the user wants to filter for originally (Gene Filter List)
+
+**plusintron:** Tabix file of all the plus strand introns (Intron Annotations)
+
+**minusintron:** Tabix file of all the minus strand introns (Intron Annotations)
 
 Note:
 > If you do not want to use these options, remove them from the file. There should be no extra lines in the file or it will not work. 
@@ -201,9 +206,9 @@ Note:
 Run the Program
 
 ```
-rmskhg38_annotate_gtf_update_test_tpm.py <gtffile> <argumentfile.txt*>
+rmskhg38_annotate_gtf_update_test_tpm.py <gtffile> <argumentfile.txt>*
 ```
-*This is optional. If it is not included then the program will default to the argumentfile.txt within the rnapipeline folder.
+>*This is optional. If it is not included then the program will default to the argumentfile.txt within the rnapipeline folder.
 
 Description of Output File(s):
 
