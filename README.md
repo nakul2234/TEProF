@@ -220,7 +220,7 @@ Description of Output File(s):
  
 (4) \<gtffile\>_annotated_filtered_test*
  
- * Files (3) and (4) will only be produced if the user would like to focus the analysis on a set of genes such as a list of oncogenes and tumor suppresor genes
+ >*Files (3) and (4) will only be produced if the user would like to focus the analysis on a set of genes such as a list of oncogenes and tumor suppresor genes
 
 Excel Document with Description: [External Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/Transcript%20Annotation%20Description.xlsx 'GTF Annotation Output')
 
