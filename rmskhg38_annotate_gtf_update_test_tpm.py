@@ -13,23 +13,30 @@ import math
 import copy
 import tabix
 
-# Import files needed to perform annotation. Check to make sure all the files do exist
+# If the arguments.txt file is not specified then default the one in the directory as the transcript will be used
+if len(sys.argv) < 3:
+    argfile = sys.path[0] + '/arguments.txt'
+else:
+    argfile = sys.argv[2]
+    
+print argfile
 
+# Import files needed to perform annotation. Check to make sure all the files do exist
 argdic = {}
-with open(sys.argv[2]) as f:
+with open(argfile) as f:
     for line in f:
-       (key, val) = line.split('\t')
-       argdic[key] = val
-        
+        (key, val) = line.split('\t')
+        argdic[key] = val.strip()
+  
 # Check if all required arguments are present in the dictionary
 #
 # rmsk: tabix formatted bed6 files with repeatmasker or other file that user wants to check start location for
-# genecodeplusdic: Dictionary of all gencode elements including introns and exons for the plus (+) strand
-# genecodeminusdic: Dictionary of all gencode elements including introns and exons for the minus (-) strand
+# gencodeplusdic: Dictionary of all gencode elements including introns and exons for the plus (+) strand
+# gencodeminusdic: Dictionary of all gencode elements including introns and exons for the minus (-) strand
 
 requiredkeys = ['rmsk', 'gencodeplusdic', 'gencodeminusdic']
-if not (requiredkeys[1] in argdic.keys() and requiredkeys[2] in argdic.keys() and requiredkeys[3] in argdic.keys()):
-    sys.exit('All required arguments (rmsk, gencodeplus, and gencodeminusdic) are not present')
+if not (requiredkeys[0] in argdic.keys() and requiredkeys[1] in argdic.keys() and requiredkeys[2] in argdic.keys()):
+    sys.exit('All required arguments (rmsk, gencodeplusdic, and gencodeminusdic) are not present')
 else:
     for keyfile in requiredkeys:
         if not os.path.isfile(argdic[keyfile]):
@@ -423,8 +430,8 @@ transcriptlines = []
 
 i = 0
 with open(sys.argv[1],"r") as gtf:
-    next(gtf)
-    next(gtf)
+    next(gtf) # For the two hashtags that are in the file. Should make this a loop where it will parse hashtags till it gets to the actual file itself
+    next(gtf) # For the two hashtags that are in the file
     
     # The file name of the peak file has information on the chromosome, start, end, and strand of the peak
     for eachline in gtf:
@@ -514,7 +521,7 @@ for indext in transcriptlines:
         subfam = []
     
     # If the chromosome is not in the gencode dictionary then an accurate annotation is also not possible
-    if chr_trans not in plus.keys():
+    if chr_trans not in plus_dic.keys():
         skip = True
         subfam = []
     
@@ -559,8 +566,8 @@ for indext in transcriptlines:
         subfamTE = transcriptTE[3]
         
         # I want to specifically look at TE for now, but maybe others later.
-        if subfamTE not in TE.keys():
-            transcriptTE = ["None", "None", "None", "None", "None", "None"]
+        #if subfamTE not in TE.keys():
+        #    transcriptTE = ["None", "None", "None", "None", "None", "None"]
              
     # Figure out where the transcript ends    
     if j == num_transcripts - 1:
