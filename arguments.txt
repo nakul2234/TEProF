@@ -1,0 +1,6 @@
+rmsk	/bar/nshah/reference/rmskhg38.bed6.gz
+genecodeplusdic	/bar/nshah/reference/genecode_plus_hg38.dic
+gencodeminusdic /bar/nshah/reference/genecode_minus_hg38.dic
+focusgenes	/bar/nshah/reference/oncogenes_augmented.txt
+plusintron	/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_plus_sorted.gz
+minusintron	/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_minus_sorted.gz

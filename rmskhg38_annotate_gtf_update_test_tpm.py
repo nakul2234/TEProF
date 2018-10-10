@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # programmer : nshah 
-# usage: To be used in order to annotate a GTF file for presence of transcripts that begin in transposable elements. 
+# usage: To be used in order to annotate a GTF file for presence of transcripts that begin in transposable elements.
+# argument structure: gtfAnnotator.py <gtffile> <argumentfile.txt>
 
 from __future__ import division #integer division has to be //, now all / are floating point
 import cPickle as pickle
+import os.path
 import sys
 import subprocess as sp
 import re
@@ -11,24 +13,64 @@ import math
 import copy
 import tabix
 
-rmsk = tabix.open('/bar/nshah/reference/rmskhg38.bed6.gz')
+# Import files needed to perform annotation. Check to make sure all the files do exist
+
+argdic = {}
+with open(sys.argv[2]) as f:
+    for line in f:
+       (key, val) = line.split('\t')
+       argdic[key] = val
+        
+# Check if all required arguments are present in the dictionary
+#
+# rmsk: tabix formatted bed6 files with repeatmasker or other file that user wants to check start location for
+# genecodeplusdic: Dictionary of all gencode elements including introns and exons for the plus (+) strand
+# genecodeminusdic: Dictionary of all gencode elements including introns and exons for the minus (-) strand
+
+requiredkeys = ['rmsk', 'gencodeplusdic', 'gencodeminusdic']
+if not (requiredkeys[1] in argdic.keys() and requiredkeys[2] in argdic.keys() and requiredkeys[3] in argdic.keys()):
+    sys.exit('All required arguments (rmsk, gencodeplus, and gencodeminusdic) are not present')
+else:
+    for keyfile in requiredkeys:
+        if not os.path.isfile(argdic[keyfile]):
+            sys.exit('{} does not exist!'.format(argdic[keyfile]))
+            
+# Check if the 3 optional arguments are present and files exist
+#
+# focusgenes: The program has two outputs (1) on a focus set of genes (2) with all genes. This file lists the genes that the user wants to filter for originally
+# plusintron: Tabix file of all the plus strand introns 
+# minusintron: Tabix file of all the minus strand introns
+
+optionalkeys = ['focusgenes', 'plusintron', 'minusintron']
+
+filtergenes = False
+annotateintrons = False
+if optionalkeys[0] in argdic.keys():
+    if os.path.isfile(argdic[optionalkeys[0]]):
+        filtergenes = True
+if optionalkeys[1] in argdic.keys() and optionalkeys[2] in argdic.keys():
+    if os.path.isfile(argdic[optionalkeys[1]]) and os.path.isfile(argdic[optionalkeys[2]]):
+        annotateintrons = True
+
+# Add in information for the repeatmasker annotation (user can use any bed6 file)
+
+rmsk = tabix.open(argdic['rmsk'])
 input = sys.argv[1]
 peaktotalsize = 0 #Will be added up from the bed/peak file
 
-oncogenelist = []
-# These are the oncogenes that I want to focus on. This can be excluded in future versions where a global analysis is desired.
-with open("/bar/nshah/reference/oncogenes_augmented.txt","r") as fin:
-        for eachline in fin:
-                temp = eachline.strip()
-                oncogenelist = oncogenelist + [temp]
+if filtergenes == True:
+    oncogenelist = []
+    # These are the oncogenes that I want to focus on. This can be excluded in future versions where a global analysis is desired.
+    with open(argdic['focusgenes'],"r") as fin:
+            for eachline in fin:
+                    temp = eachline.strip()
+                    oncogenelist = oncogenelist + [temp]
                 
 # Legacy code allowing for TE filtering within this script, but it was decided that it makes more sense to do this in downstream analysis
 #
 #TE={}
 #TEsub={}
 #TEdic={}
-
-# This is a file form Daofeng that has the class, family, and subfamily. I will replace this with the rmsk subfam dictionary I made earlier.
 # Format: Subfamily     Class   Family
 #with open("/bar/nshah/programs/Pyscript/TE.lst","r") as fin:
 #       for eachline in fin:
@@ -81,9 +123,9 @@ def annotate(start, DIC):
 def annotateintron(chromosome, start, end, strand):
 
     if strand == "+":
-        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_plus_sorted.gz')
+        pIntrons = tabix.open(argdic['plusintron'])
     else:
-        pIntrons = tabix.open('/bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_minus_sorted.gz')
+        pIntrons = tabix.open(argdic['minusintron'])
     res = []
     tmp = ''
     try:
@@ -410,13 +452,13 @@ num_lines = len(lines)
     
 # Load up the genecode dictionaries
 plus_dic = {}
-with open("/bar/nshah/reference/genecode_plus_hg38.dic",'r') as DIC:
+with open(argdic['gencodeplusdic'],'r') as DIC:
     plus_dic = pickle.load(DIC)
 
 DIC.close()
 
 minus_dic = {}
-with open("/bar/nshah/reference/genecode_minus_hg38.dic",'r') as DIC:
+with open(argdic['gencodeminusdic'],'r') as DIC:
     minus_dic = pickle.load(DIC)
 
 DIC.close()
@@ -425,8 +467,9 @@ DIC.close()
 lines.pop(0)
 lines.pop(0)
 
-fout=open('{}_annotated_test'.format(sys.argv[1]),'w')
-fout1=open('{}_annotated_filtered_test'.format(sys.argv[1]),'w') 
+if filtergenes == True:
+    fout=open('{}_annotated_test'.format(sys.argv[1]),'w')
+    fout1=open('{}_annotated_filtered_test'.format(sys.argv[1]),'w') 
 
 fout_a=open('{}_annotated_test_all'.format(sys.argv[1]),'w')
 fout1_a=open('{}_annotated_filtered_test_all'.format(sys.argv[1]),'w') 
@@ -441,13 +484,9 @@ for indext in transcriptlines:
     chr_trans = temp[0]
     
     
-    #Should be changed to allow for other chromosome species. The user should be able to define the allowed set of chromosomes
-    
-    allowedchr = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY']
-    
-    if chr_trans not in allowedchr:
-        j = j + 1
-        continue
+    # Legacy for human. 
+    #
+    # allowedchr = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15', 'chr16', 'chr17', 'chr18', 'chr19', 'chr20', 'chr21', 'chr22', 'chrX', 'chrY']
     
     start_trans = int(temp[3])
     end_trans = int(temp[4])
@@ -471,6 +510,11 @@ for indext in transcriptlines:
     strand = temp[6]
     
     if strand == ".":
+        skip = True
+        subfam = []
+    
+    # If the chromosome is not in the gencode dictionary then an accurate annotation is also not possible
+    if chr_trans not in plus.keys():
         skip = True
         subfam = []
     
@@ -569,7 +613,11 @@ for indext in transcriptlines:
                 firstintronanno = "None"
             elif i == 2: # This means there is only 1 splice site, so that is the one that should be annotated
                 tendannotation = processannotation(annotateregion(exonstarts[1], exonends[1], plus[chromosome]),"plus", tstartannotation[11])
-                firstintronanno = annotateintron(chromosome, exon1end, exonstarts[1], strand)
+                
+                if annotateintrons == True:
+                    firstintronanno = annotateintron(chromosome, exon1end, exonstarts[1], strand)
+                else:
+                    firstintronanno = "None"
             else: # This is when there are multiple splice acceptor sites. It will keep iterating through them until it find one that annotated into a transcript
                   # If none of them do, then it will return a list of "None"
                 tendannotation = ["None", "None", "None", "None", "None", "None", "None", "None", "None", "None", "None", "None"]
@@ -586,7 +634,11 @@ for indext in transcriptlines:
                     tendannotation = exonannotations[exontypes.index("exon")]
                 elif "intron" in exontypes:
                     tendannotation = exonannotations[exontypes.index("intron")]
-                firstintronanno = annotateintron(chromosome, exon1end, exonstarts[1], strand)
+                
+                if annotateintrons == True:
+                    firstintronanno = annotateintron(chromosome, exon1end, exonstarts[1], strand)
+                else:
+                    firstintronanno = "None"
                 
             exonstarts.sort()
             exonends.sort()
@@ -609,15 +661,14 @@ for indext in transcriptlines:
                                     if transcriptTE[0] != "None":
                                         print >> fout1_a, stringreturn
             
-            #print tstartannotation
-            #print tendannotation
-            if tendannotation[1] in oncogenelist:
-                print >> fout, stringreturn
-                if splicing == "Yes":
-                        if tendannotation[5] == "exon":
-                                if tendannotation[0] == "protein_coding":
-                                        if transcriptTE[0] != "None":
-                                            print >> fout1, stringreturn
+            if filtergenes == True:
+                if tendannotation[1] in oncogenelist:
+                    print >> fout, stringreturn
+                    if splicing == "Yes":
+                            if tendannotation[5] == "exon":
+                                    if tendannotation[0] == "protein_coding":
+                                            if transcriptTE[0] != "None":
+                                                print >> fout1, stringreturn
 
           
         elif "-" == strand:
@@ -658,7 +709,11 @@ for indext in transcriptlines:
                 firstintronanno = "None"
             elif i == 2: # This means there is only 1 splice site, so that is the one that should be annotated
                 tendannotation = processannotation(annotateregion(exonends[1], exonstarts[1], plus[chromosome]),"minus", tstartannotation[11])
-                firstintronanno = annotateintron(chromosome, exonstarts[1], exon1start, strand)
+                
+                if annotateintrons == True:
+                    firstintronanno = annotateintron(chromosome, exonstarts[1], exon1start, strand)
+                else:
+                    firstintronanno = "None"
             else: # This is when there are multiple splice acceptor sites. It will keep iterating through them until it find one that annotated inot a transcript
                   # If none of them do, then it will return a list of "None"
                 tendannotation = ["None", "None", "None", "None", "None", "None", "None", "None", "None", "None", "None", "None"]
@@ -675,7 +730,12 @@ for indext in transcriptlines:
                     tendannotation = exonannotations[exontypes.index("exon")]
                 elif "intron" in exontypes:
                     tendannotation = exonannotations[exontypes.index("intron")]
-                firstintronanno = annotateintron(chromosome, exonstarts[1], exon1start, strand)
+                
+                if annotateintrons == True:
+                    firstintronanno = annotateintron(chromosome, exonstarts[1], exon1start, strand)
+                else:
+                    firstintronanno = "None"    
+                
             exonstarts.sort()
             exonends.sort()
             x = 0
@@ -697,13 +757,14 @@ for indext in transcriptlines:
                                     if transcriptTE[0] != "None":
                                         print >> fout1_a, stringreturn
             
-            if tendannotation[1] in oncogenelist:
-                print >> fout, stringreturn
-                if splicing == "Yes":
-                        if tendannotation[5] == "exon":
-                                if tendannotation[0] == "protein_coding":
-                                        if transcriptTE[0] != "None":
-                                            print >> fout1, stringreturn
+            if filtergenes == True:
+                if tendannotation[1] in oncogenelist:
+                    print >> fout, stringreturn
+                    if splicing == "Yes":
+                            if tendannotation[5] == "exon":
+                                    if tendannotation[0] == "protein_coding":
+                                            if transcriptTE[0] != "None":
+                                                print >> fout1, stringreturn
                                                             
         
     j = j + 1
