@@ -193,6 +193,8 @@ def getOverlap(a ,b):
 # previous is a variable that holds the transcript ID of a previous annotation (if a previous annotation has been made)
 # If there has been a previous annotation, then that transcript ID will be searched for first before anything else.
 def annotateregion(start, end, DIC):
+    
+    print 'regionannotate'
     startelement = "None"
     start_codon_coor = "None"
     stop_codon_coor = "None"
@@ -202,10 +204,13 @@ def annotateregion(start, end, DIC):
     overlappercentage = "None"
     
     allannotation = []
+    
     for transcript in DIC.keys():
         overlapbw = getOverlap([start, end], [transcript[0], transcript[1]])
         if overlapbw > 0:
             elementlist = []
+            startelements = []
+            print(DIC[transcript].keys())
             for element in DIC[transcript].keys():
                 if element == "start_codon":
                     start_codon = DIC[transcript][element].split(",")
@@ -219,12 +224,17 @@ def annotateregion(start, end, DIC):
                     overlapbw2 = getOverlap([start, end], [element[0], element[1]])
                     if overlapbw2 > 0:
                         startelement = DIC[transcript][element]
+                        startelements.append(startelement)
             transcriptstart = str(transcript[0])
             transcriptend = str(transcript[1])
             elementlistprint = ",".join(elementlist)
-
-            coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlistprint, overlappercentage]))
-            allannotation.append(coordinateanno)
+            if startelements:
+                for startelement in startelements:
+                    coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlistprint, overlappercentage]))
+                    allannotation.append(coordinateanno)
+            else:
+                coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlistprint, overlappercentage]))
+                allannotation.append(coordinateanno)
     
     if elementlist == "None":
         coordinateanno = ("^".join([startelement, start_codon_coor, stop_codon_coor, transcriptstart, transcriptend, elementlist, overlappercentage]))
@@ -253,6 +263,7 @@ def processannotation(returnanno, plusminus, previous):
     if plusminus == "minus":
         startexon = returnanno[2]
         endexon = returnanno[1]
+    
     genetype = []
     genename = []
     chromosome = []
@@ -368,9 +379,7 @@ def processannotation(returnanno, plusminus, previous):
                 #Gets the elements that the start index is actually in. Then these elements are 
                 startindicesbw = []
                 startindicesbw = [i for i,x in enumerate(zip(start,end)) if x[0] <= startexon and x[1] >= startexon]
-                
-                if plusminus == "minus":
-                    startindicesbw = [i for i,x in enumerate(zip(start,end)) if x[0] <= endexon and x[1] >= endexon]
+                print(startindicesbw)
                    
                 if startindicesbw:
                     if "exon" in [exonintron[b] for b in startindicesbw]:

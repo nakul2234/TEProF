@@ -6,7 +6,7 @@ This pipeline takes assembled RNA-sequencing data (.gtf format) in human or mous
 
 # Requirements
 
-## Software
+## (1) Software
 
 stringtie >= 1.3.3
 
@@ -16,17 +16,20 @@ python 2.7 (cPickle, pytabix 0.1)
 
 R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing)) 
 
-## Reference Files
+## (2) Reference Files
 
 These are the required reference files for the code to work. The `arguments.txt` file that is within the directory of the scripts or that can be specified by the user will define where these files are located. We have default files ready for hg38, and plan on providing other assemblies as well. 
 
-### Default hg38
+### (A) Default hg38
 
 We have created a default set of reference files for hg38. For simple use, download the directory, place it in the rnapipeline folder, and extract. Make sure to update the arguments.txt file with the full path of these files (Explained below in Usage).
 
 Download Link hg38: [External Download Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/rnapipelinerefhg38.tar.gz 'Compressed Directory')
 
-### Gencode Dictionary
+Note:
+>If you use these default files then you can skip B-E. However, be sure to look at E if you want to use a list of genes different then the default list that is based on the publication. 
+
+### (B) Gencode Dictionary
 
 1. Download Gencode GTF reference file desired here: https://www.gencodegenes.org/
 
@@ -46,7 +49,7 @@ This will generate 2 files: (1) `genecode_plus.dic` and (2) `genecode_minus.dic`
  
 4. Rename as needed
 
-### Repeatmasker Files
+### (C) Repeatmasker Files
 
 Though this pipeline is optimized for looking at repetitive-element derived transcripts, any bed file for alternative promoter locations can be used. 
 
@@ -71,7 +74,7 @@ tabix -p bed rmsk.bed.gz
 
 4. Both the bgzipped file and the tabix index must be in the same directory
 
-### Intron Annotations (Optional)
+### (D) Intron Annotations (Optional)
 
 A useful feature that can be used is that the pipeline will annotate the first intron of each transcript based on a reference file. This can help in deciding whether a candidate has been previously annotated as an alternative transcript. 
 
@@ -117,7 +120,7 @@ tabix -p bed <OUTPUT_sorted.gtf>_introns_minus_sorted.gz
 
 7. Both the bgzipped file and the tabix index need to be in the same folder
 
-### Gene Filter List (Optional)
+### (E) Gene Filter List (Optional)
 
 For large sets of analysis, it might be computationally advantageous to limit the analysis to only a small set of genes for subsequent analysis. Create a file with a genesymbol per line. Example:
 
