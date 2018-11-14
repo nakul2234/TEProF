@@ -1,4 +1,5 @@
 rmsk	/bar/nshah/reference/rmskhg38.bed6.gz
+rmskannotationfile	/bar/nshah/reference/repeatmasker/repeatmasker_description_uniq.lst
 gencodeplusdic	/bar/nshah/reference/genecode_plus_hg38.dic
 gencodeminusdic	/bar/nshah/reference/genecode_minus_hg38.dic
 focusgenes	/bar/nshah/reference/oncogenes_augmented.txt

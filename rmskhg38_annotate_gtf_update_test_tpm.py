@@ -194,7 +194,7 @@ def getOverlap(a ,b):
 # If there has been a previous annotation, then that transcript ID will be searched for first before anything else.
 def annotateregion(start, end, DIC):
     
-    print 'regionannotate'
+    #print 'regionannotate'
     startelement = "None"
     start_codon_coor = "None"
     stop_codon_coor = "None"
@@ -210,7 +210,7 @@ def annotateregion(start, end, DIC):
         if overlapbw > 0:
             elementlist = []
             startelements = []
-            print(DIC[transcript].keys())
+            #print(DIC[transcript].keys())
             for element in DIC[transcript].keys():
                 if element == "start_codon":
                     start_codon = DIC[transcript][element].split(",")
@@ -379,7 +379,7 @@ def processannotation(returnanno, plusminus, previous):
                 #Gets the elements that the start index is actually in. Then these elements are 
                 startindicesbw = []
                 startindicesbw = [i for i,x in enumerate(zip(start,end)) if x[0] <= startexon and x[1] >= startexon]
-                print(startindicesbw)
+                #print(startindicesbw)
                    
                 if startindicesbw:
                     if "exon" in [exonintron[b] for b in startindicesbw]:
@@ -672,19 +672,15 @@ for indext in transcriptlines:
             
             print >> fout_a, stringreturn
             if splicing == "Yes":
-                    if tendannotation[5] == "exon":
-                            if tendannotation[0] == "protein_coding":
-                                    if transcriptTE[0] != "None":
-                                        print >> fout1_a, stringreturn
+                if transcriptTE[0] != "None":
+                    print >> fout1_a, stringreturn
             
             if filtergenes == True:
                 if tendannotation[1] in oncogenelist:
                     print >> fout, stringreturn
                     if splicing == "Yes":
-                            if tendannotation[5] == "exon":
-                                    if tendannotation[0] == "protein_coding":
-                                            if transcriptTE[0] != "None":
-                                                print >> fout1, stringreturn
+                        if transcriptTE[0] != "None":
+                            print >> fout1, stringreturn
 
           
         elif "-" == strand:
@@ -768,20 +764,15 @@ for indext in transcriptlines:
             
             print >> fout_a, stringreturn
             if splicing == "Yes":
-                    if tendannotation[5] == "exon":
-                            if tendannotation[0] == "protein_coding":
-                                    if transcriptTE[0] != "None":
-                                        print >> fout1_a, stringreturn
+                if transcriptTE[0] != "None":
+                    print >> fout1_a, stringreturn
             
             if filtergenes == True:
                 if tendannotation[1] in oncogenelist:
                     print >> fout, stringreturn
                     if splicing == "Yes":
-                            if tendannotation[5] == "exon":
-                                    if tendannotation[0] == "protein_coding":
-                                            if transcriptTE[0] != "None":
-                                                print >> fout1, stringreturn
-                                                            
+                        if transcriptTE[0] != "None":
+                            print >> fout1, stringreturn                             
         
     j = j + 1
     #print "{} out of {}".format(str(j), str(num_transcripts))

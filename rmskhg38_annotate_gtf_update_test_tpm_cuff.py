@@ -599,20 +599,16 @@ for indext in transcriptlines:
             
             print >> fout_a, stringreturn
             if splicing == "Yes":
-                    if tendannotation[5] == "exon":
-                            if tendannotation[0] == "protein_coding":
-                                    if transcriptTE[0] != "None":
-                                        print >> fout1_a, stringreturn
+                if transcriptTE[0] != "None":
+                        print >> fout1_a, stringreturn
             
             #print tstartannotation
             #print tendannotation
             if tendannotation[1] in oncogenelist:
                 print >> fout, stringreturn
                 if splicing == "Yes":
-                        if tendannotation[5] == "exon":
-                                if tendannotation[0] == "protein_coding":
-                                        if transcriptTE[0] != "None":
-                                            print >> fout1, stringreturn
+                        if transcriptTE[0] != "None":
+                                print >> fout1, stringreturn
 
           
         elif "-" == strand:
@@ -685,18 +681,14 @@ for indext in transcriptlines:
             
             print >> fout_a, stringreturn
             if splicing == "Yes":
-                    if tendannotation[5] == "exon":
-                            if tendannotation[0] == "protein_coding":
-                                    if transcriptTE[0] != "None":
-                                        print >> fout1_a, stringreturn
+                if transcriptTE[0] != "None":
+                        print >> fout1_a, stringreturn
             
             if tendannotation[1] in oncogenelist:
                 print >> fout, stringreturn
                 if splicing == "Yes":
-                        if tendannotation[5] == "exon":
-                                if tendannotation[0] == "protein_coding":
-                                        if transcriptTE[0] != "None":
-                                            print >> fout1, stringreturn
+                        if transcriptTE[0] != "None":
+                                print >> fout1, stringreturn
                                                             
         
     j = j + 1
