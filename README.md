@@ -241,7 +241,7 @@ Output File(s):
 
 (1) \<gtffile\>_annotated_filtered_test_(all)_c
 
->Three additional columns are made: (1) Maximum coverage of gene of interest (2) Maximum tpm of gene of interest (3) Total of gene of interest
+>Three additional columns are made: (1) Maximum coverage of gene of interest (2) Maximum tpm of gene of interest (3) Total of gene of interest.
 >Note: For those transcripts that are from a TE but do not splice into a gene, these stats will be compared across all the transcripts like this. Thus the fraction will be very low.  
 
 ## 4. Aggregate annotation samples across samples
@@ -286,7 +286,7 @@ Output File(s):
 
 Note:
 >This step will give ALL assembled transcripts. Assembly is very noisy, and thus the output of this step will have a high false positive rate.
->Filtering based on tpm or fraction of tpm can help
+>Filtering based on tpm or fraction of tpm can help.
 >It is reccomended that the user looks at initial_candidate_list.tsv and assures that the candidates are in the format that they desire. 
 
 
@@ -297,11 +297,47 @@ It is recommended that candidates are confirmed using read information. We have 
 We have developed a fast parser using samtools and bedtools to be able to get read information. There are separate programs for either single and or paired end reads. The only argument needed is the path of the bam files.
 
 Note:
->Bam files should be sorted by position and indexed for this to work
->It is recommended that paired-end reads are used. Single-end performance is not as robust. 
+>Bam files should be sorted by position and indexed for this to work.
+>Bam file naems should be the same as the gtf files that were the oriignal input for the pipeline except the extention is different.
+>It is recommended that paired-end reads are used. Single-end performance is not as robust.
 
+(A) Make the directory where the stats will be stored
+```
+mkdir filterreadstats
+```
 
-## 6. Filter Candidates
+(B) Create commands to calculate read information
+
+```
+commandsmax_speed.py filter_combined_candidates.tsv <bam file location*>
+```
+Note:
+>*the bam file location should be a full path and should end in a forward slash (e.g. /scratch/nakul/epikate/)
+
+Output File(s):
+
+(1) filterreadcommands.txt: A list of all the commands needed to calculate read information. These commands use a combination of samtools, bedtools, and custom scripts. For every combination of candidate and bamfile present in teh dataset, there will be a command.
+
+(C) Run the commands
+It is reccomended that [parallel_GNU](https://www.gnu.org/software/parallel/) or a similar method be used to run the list of commands in parallel. 
+
+```
+parallel_GNU -j 4 < filterreadcommands.txt
+```
+Note:
+>(-j) will tell parallel_GNU the number of processes
+>The alias for parallel_GNU might just parallel or something else on your server configuration
+
+(D) Combine all the read information files
+
+```
+find ./filterreadstats -name "*.stats" -type f -maxdepth 1 -print0 | xargs -0 -n128 -P16 grep e > resultgrep_filterreadstatsdone.txt
+cat resultgrep_filterreadstatsdone.txt | sed 's/\:/\t/g' > filter_read_stats.txt
+```
+
+This will create the file **filter_read_stats.txt** that has all the read information that is used in subsequent analysis.
+
+## 6. Filter Candidates based on read information
 
 
 
@@ -311,4 +347,4 @@ Note:
 
 ## 9. Aggregate Stringtie Information
 
-This can also be down with the package [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github') for more advanced statistics on transcript level quantification. In the case of simply wanting to find existence of TE-transcripts we have a helper script to aggregate relevant data. 
+This can also be done with the package [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github') for more advanced statistics on transcript level quantification. In the case of simply wanting to find existence of TE-transcripts we have a helper script to aggregate relevant data. 

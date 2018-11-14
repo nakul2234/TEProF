@@ -106,6 +106,8 @@ for (file_name in files_annotated){
   columnlabels <- c("transcriptname", "type1", "gene1", "chr1", "start1", "end1", "exonintron1", "number1" ,"startcodon1" , "transcriptstart1", "transcriptend1", "elements1", "id1", "splicing", "type2", "gene2", "chr2", "start2", "end2", "exonintron2", "number2" ,"startcodon2", "transcriptstart2", "transcriptend2", "elements2", "id2", "chromtrans", "starttrans", "endtrans", "transcoord", "intronanno", "chrTE", "startTE", "endTE", "subfamTE", "numTE", "strandTE", "strand","covtrans", "covexon", "tpm", "maxtranscov", "maxtpm", "totaltpm")
 
   colnames(filtered_table) <- columnlabels
+  
+  filtered_table$file_label <- rep(strsplit(file_name, split = ".gtf")[[1]][1], length(filtered_table$strand))
 
   if (grepl(parseTreatment,file_name)){
     filtered_table$tumorcount <- rep(1,length(filtered_table$type1))
