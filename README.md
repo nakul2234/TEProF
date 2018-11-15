@@ -252,29 +252,31 @@ Arguments are positional, and thus making sure they are in correct order is impo
 
 This script can be run standalone with specifying the parameters, or you can do this step in RStudio to add some more custom filters if needed. The columns in the final file must be the same, however for the subsequent steps to work. 
 
-Options with Defaults:
-
--e \<ext_treatment\> (default: filtered): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment since all the c files should have filter in their name. 
-
--l \<exon 1 length max\> (default: 2588): The maximum length of exon 1. We are using the 99th percentile of gencode v25 transcripts
-
--s \<exon skipping max\> (default: 2): Based on genomic contamination, assembly can create transcripts that have intron retention. These could be real, but oftentimes these look like noise. A maximum level of 2 is recommended.
-
--n \<sample total min\> (default: 1): Minimum number of samples that must have a candidate for it to be considered. With low number of samples 1 is recommended. For larger studies this can be increased.
-
--t \<treatment total min\> (default: 0): In case the user would like to only consider candidates that are present in a certain number of treatment samples.
-
--x \<treatment exclusive\> (default: no): In case the user would like a maximum for the untreated samples. This could be if the user wants to only consider treatment-exclusive samples. In that case, the user should put yes instead of no. 
-
--k \<keep none\> (default: no): There can be transcripts from TEs that have splicing, but do not end up splicing into a gene. By default these are removed. This can be changed to yes if the user would like to look at these.
-
--f \<filter for TEs\> (default: yes): Repeatmasker files include many repeats besides TE. This could be an interesting benchmark to compare to, but by default they are removed. The user can specify no if they would like to keep these. 
-
--a \<argument file\> (default: \<directory of pipeline\>/arguments.txt): The arguments.txt file location. By default, the arguments.txt file that is in the rnapipeline directory will be used. If another is desired for use then the fullpath of the file can be specified. 
+Run the program
 
 ```
 aggregateProcessedAnnotation.R <options>
 ```
+
+**Options with Defaults:**
+
+**-e** \<ext_treatment\> (default: filtered): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment since all the c files should have filter in their name. 
+
+**-l** \<exon 1 length max\> (default: 2588): The maximum length of exon 1. We are using the 99th percentile of gencode v25 transcripts
+
+**-s** \<exon skipping max\> (default: 2): Based on genomic contamination, assembly can create transcripts that have intron retention. These could be real, but oftentimes these look like noise. A maximum level of 2 is recommended.
+
+**-n** \<sample total min\> (default: 1): Minimum number of samples that must have a candidate for it to be considered. With low number of samples 1 is recommended. For larger studies this can be increased.
+
+**-t** \<treatment total min\> (default: 0): In case the user would like to only consider candidates that are present in a certain number of treatment samples.
+
+**-x** \<treatment exclusive\> (default: no): In case the user would like a maximum for the untreated samples. This could be if the user wants to only consider treatment-exclusive samples. In that case, the user should put yes instead of no. 
+
+**-k** \<keep none\> (default: no): There can be transcripts from TEs that have splicing, but do not end up splicing into a gene. By default these are removed. This can be changed to yes if the user would like to look at these.
+
+**-f** \<filter for TEs\> (default: yes): Repeatmasker files include many repeats besides TE. This could be an interesting benchmark to compare to, but by default they are removed. The user can specify no if they would like to keep these. 
+
+**-a** \<argument file\> (default: \<directory of pipeline\>/arguments.txt): The arguments.txt file location. By default, the arguments.txt file that is in the rnapipeline directory will be used. If another is desired for use then the fullpath of the file can be specified. 
 
 Output File(s):
 
@@ -339,12 +341,57 @@ This will create the file **filter_read_stats.txt** that has all the read inform
 
 ## 6. Filter Candidates based on read information
 
+Using the read annotation information, only the highest confidence candidates are kept as potential transcripts.
 
+The default is 10 reads starting in the TE in the correct direction and having 2 reads going from the TE to the gene in the file. A limitation is that this can bias the detection against longer transcripts.
+
+Note:
+>This requires the Step4.Rdata created in step 4 that has an Rsession saved that will be reloaded for the program. 
+
+Run the program
+
+```
+filterReadCandidates.R <options>
+```
+**Options with Defaults:**
+
+**-r** \<minimum reads in TE\> (default: 10): The number of paired end reads required in a single file that start within the TE.
+
+**-s** \<min start read\> (default: 2): The number of paired-end reads that span distance from TE to gene required across all files.  
+
+**-e** \<exonization read support max percent\> (default: .15): Maximum percentage of files that have reads that start in gene and go to TE of interest, suggesting exonization rather than a promoter event
+
+**-d** \<distance TE\> (default: 2500): Minimum distance between the TE and the start of the trawnscript. Helps remove noise from the promoter. 
+
+Output File(s):
+
+(1) read_filtered_candidates.tsv: A file with every TE-gene transcript. This file is used for calculating read information in subsequent steps.
+ 
+(2) candidate_transcripts.gff3: A GFF3 formatted file of all the unique TE-gene transcripts detected. This can be viewed on a genome viewer to see what candidates look like. This is used in subsequent steps. 
+ 
+(3) Step6.RData: Workspace file with data loaded from R session. Subsequent steps load this to save time.
+
+
+Remove step 4 session data that is no longer needed.
+
+```
+rm Step4.RData
+```
 
 ## 7. Merge with Reference GTF
 
-## 8. Annotate Merged GTF and Calculate Transcript-Level Expression with Stringtie
+Using the [cufflinks](http://cole-trapnell-lab.github.io/cufflinks/ 'Cufflinks Github') package, merginging candidate transcripts with the reference. Also, candidates will be merged with each other which can help remove incomplete 5' transcripts that are detected.
 
-## 9. Aggregate Stringtie Information
+```
 
-This can also be done with the package [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github') for more advanced statistics on transcript level quantification. In the case of simply wanting to find existence of TE-transcripts we have a helper script to aggregate relevant data. 
+```
+
+## 8. Annotate Merged GTF
+
+## 9. Calculate Transcript-Level Expression with Stringtie
+
+## 10. Aggregate Stringtie Information
+
+In the case of simply wanting to find existence of TE-transcripts we have a helper script to aggregate relevant data.
+
+This can also be done with the package [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github') for more advanced statistics on transcript level quantification. 

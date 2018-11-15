@@ -29,7 +29,7 @@ parser$add_argument('-n',type='character',help='The minimum total number of samp
 parser$add_argument('-t',type='character',help='The minimum number of treatment samples the candidate has to be present in')
 parser$add_argument('-x',type='character',help='If yes is entered, then only candidates exclusive to the treatment samples will be in the output')
 parser$add_argument('-k',type='character',help='If yes is entered, then candidates that do not end up splicing into a gene will be included')
-parser$add_argument('-f',type='character',help='If yes is entered, only the following TE classes will be used (LINE, SINE, LTR, LTR?, DNA, DNA?, Retroposon in Repeatmasker)')
+parser$add_argument('-f',type='character',help='If yes is entered, only the following TE classes will be used (LINE, SINE, SINE?, LTR, LTR?, DNA, DNA?, and Retroposon in Repeatmasker)')
 parser$add_argument('-a',type='character',help='The arguments.txt file that is being used for this run.')
 argsparse <- parser$get_args()
 
@@ -184,8 +184,8 @@ filter_combined_table <- cbind(filter_combined_table, resultsStats)
 filter_combined_table <- filter_combined_table[order(-filter_combined_table$tpm),]
 filter_combined_table <- filter_combined_table[!duplicated(filter_combined_table$uniqidfile),]
 
-counts_table = filter_combined_table[,c('subfamTE', 'classTE', 'familyTE', 'chrTE', 'startTE', 'endTE', 'gene1', 'gene2', 'exonintron1', 'number1', 'exonintron2', 'number2', 'transcriptstart2', 'strand','exon1length', 'tumorcount', 'normalcount', 'permaxcov', 'pertottpm','tpm')]
-resexonlength <- aggregate(. ~ subfamTE + classTE + familyTE + chrTE + startTE + endTE + gene1 + gene2 + exonintron1 + number1 + exonintron2 + number2 + transcriptstart2 + strand, counts_table, FUN = sum)
+counts_table = filter_combined_table[,c('subfamTE', 'classTE', 'familyTE', 'chrTE', 'startTE', 'endTE', 'gene1', 'gene2', 'exonintron1', 'number1', 'exonintron2', 'number2', 'transcriptstart2', 'transcriptend2','strand','exon1length', 'tumorcount', 'normalcount', 'permaxcov', 'pertottpm','tpm')]
+resexonlength <- aggregate(. ~ subfamTE + classTE + familyTE + chrTE + startTE + endTE + gene1 + gene2 + exonintron1 + number1 + exonintron2 + number2 + transcriptstart2 + transcriptend2 + strand, counts_table, FUN = sum)
 
 i <- sapply(resexonlength, is.factor)
 resexonlength[i] <- lapply(resexonlength[i], as.character)
@@ -210,6 +210,7 @@ if (treatmentexclusive == 'yes'){
 }
 if (keepNone == 'no'){
   resexonlength <- resexonlength[resexonlength$gene2 != 'None',]
+  resexonlength <- resexonlength[resexonlength$exonintron2 != 'intron',]
 }
 
 # Treatment minimum filter
