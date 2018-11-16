@@ -12,6 +12,8 @@ stringtie >= 1.3.3
 
 samtools >= 1.3.1
 
+cufflinks >= 2.2.1
+
 python 2.7 (cPickle, pytabix 0.1)
 
 R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc) 
@@ -215,7 +217,7 @@ rmskhg38_annotate_gtf_update_test_tpm.py <gtffile> <argumentfile.txt>*
 ```
 >*This is optional. If it is not included then the program will default to the argumentfile.txt within the rnapipeline folder.
 
-Output File(s):
+**Output File(s):**
 
 (1) \<gtffile\>_annotated_test_all
  
@@ -278,7 +280,7 @@ aggregateProcessedAnnotation.R <options>
 
 **-a** \<argument file\> (default: \<directory of pipeline\>/arguments.txt): The arguments.txt file location. By default, the arguments.txt file that is in the rnapipeline directory will be used. If another is desired for use then the fullpath of the file can be specified. 
 
-Output File(s):
+**Output File(s):**
 
 (1) filter_combined_candidates.tsv: A file with every TE-gene transcript. This file is used for calculating read information in subsequent steps.
  
@@ -316,7 +318,7 @@ commandsmax_speed.py filter_combined_candidates.tsv <bam file location*>
 Note:
 >*the bam file location should be a full path and should end in a forward slash (e.g. /scratch/nakul/epikate/)
 
-Output File(s):
+**Output File(s):**
 
 (1) filterreadcommands.txt: A list of all the commands needed to calculate read information. These commands use a combination of samtools, bedtools, and custom scripts. For every combination of candidate and bamfile present in teh dataset, there will be a command.
 
@@ -363,7 +365,7 @@ filterReadCandidates.R <options>
 
 **-d** \<distance TE\> (default: 2500): Minimum distance between the TE and the start of the trawnscript. Helps remove noise from the promoter. 
 
-Output File(s):
+**Output File(s):**
 
 (1) read_filtered_candidates.tsv: A file with every TE-gene transcript. This file is used for calculating read information in subsequent steps.
  
@@ -383,15 +385,83 @@ rm Step4.RData
 Using the [cufflinks](http://cole-trapnell-lab.github.io/cufflinks/ 'Cufflinks Github') package, merginging candidate transcripts with the reference. Also, candidates will be merged with each other which can help remove incomplete 5' transcripts that are detected.
 
 ```
-
+gffread -E candidate_transcripts.gff3 -T -o candidate_transcripts.gtf
+cuffmerge -o ./merged_asm_full -g ~/reference/gencode.v25.basic.annotation.gtf cuffmergegtf.list
+mv ./merged_asm_full/merged.gtf reference_merged_candidates.gtf
 ```
 
 ## 8. Annotate Merged GTF
 
-## 9. Calculate Transcript-Level Expression with Stringtie
+Using a lightly modified version of our previous annotation script, the new merged reference can be annotated for a final set of TE-gene candidates. 
 
-## 10. Aggregate Stringtie Information
+```
+gffread -E reference_merged_candidates.gtf -o- > reference_merged_candidates.gff3
+rmskhg38_annotate_gtf_update_test_tpm_cuff.py reference_merged_candidates.gff3 <argumentfile.txt>*
+```
+>*This is optional. If it is not included then the program will default to the argumentfile.txt within the rnapipeline folder
 
-In the case of simply wanting to find existence of TE-transcripts we have a helper script to aggregate relevant data.
+**Output File(s):**
 
-This can also be done with the package [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github') for more advanced statistics on transcript level quantification. 
+(1) reference_merged_candidates.gff3_annotated_test_all
+ 
+(2) reference_merged_candidates.gff3_annotated_filtered_test_all <(Final List of all TE-gene transcripts)
+ 
+(3) reference_merged_candidates.gff3_annotated_test*
+ 
+(4) reference_merged_candidates.gff3_annotated_filtered_test*
+
+Note:
+>We recommend users to view the reference_merged_candidates.gff3 on a genome browser to confirm that the merged transcript file has the expected candidates. The user can map transcripts back to their annotation using the transcript ID and confirm proper identification. 
+
+## 9. Calculate Transcript-Level Expression
+
+Transcript-level expression can be calculated to compare the TE-gene transcripts to the canonical gene transcript to find those that are contributing significantly to overall expression of the gene. 
+
+```
+samtools view -q 255 -h <bam filename> | stringtie - -o \<bam filename_root\>.gtf -e -b \<bam filename_root\>_stats -p 2 -m 100 -c 1 -G reference_merged_candidates.gtf
+```
+
+An example of how to create a file with all the commands across multiple bam files so they can be run in parallel is seen below
+```
+find <bam_directory> -name "*bam" | while read file ; do xbase=${file##*/}; echo "samtools view -q 255 -h "$file" | stringtie - -o "${xbase%.*}".gtf -e -b "${xbase%.*}"_stats -p 2 -m 100 -c 1 -G reference_merged_candidates.gtf" >> quantificationCommands.txt ; done ;
+```
+>Subsequently, the commands in quantificationCommands.txt can be run individually or can be run in parallel (e.g. parallel -j 4 < quantificationCommands.txt)
+
+Note:
+>The -b flag outputs all the stats to a new folder. This is in a format that is compatible with the [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github')  downstream pipeline that can be used instead of our own custom methods of transcript identification. 
+
+## 10. Process and map expression output
+
+### (A) Obtain annotations, filter by candidates identified previously, and identify major splicing intron
+
+The following script will aggregate the information from the annotation of the merged transcript and make the final list of candidates.
+
+```
+mergeAnnotationProcess.R <options>
+```
+**Options with Defaults:**
+
+**-f** \<merged gtf annotation file\> (default: reference_merged_candidates.gff3_annotated_filtered_test_all): Reference transcript file to be processed. Default will work if all the previous steps have been done as described with the same names. 
+
+**Output File(s):**
+
+(1) candidate_introns.txt: A large one-line string with all intron locations. This is used in susequent steps to extract intron read information
+ 
+(2) candidate_names.txt: The trnascript names for all candidate transcripts that are left
+
+Remove step 6 session data that is no longer needed.
+
+```
+rm Step6.RData
+```
+
+### (B) Process stringtie transcript annotation files to get relevant information
+
+
+### (C) Aggregate across all the files and candidate transcripts
+
+
+## 11. Quantification processing, sample identification, and final table creation
+
+
+
