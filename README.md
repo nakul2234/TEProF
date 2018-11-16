@@ -455,13 +455,42 @@ Remove step 6 session data that is no longer needed.
 rm Step6.RData
 ```
 
-### (B) Process stringtie transcript annotation files to get relevant information
+### (B) Process stringtie transcript annotation files to get relevant information and aggregate
+
+Th stringtie output needs to be formmated into a table, and thus we have a few helper scripts and bash commands to make these tables. 
+
+Obtaining intron coverage information
+
+```
+find . -name "*i_data.ctab" > ctab_i.txt
+
+cat ctab_i.txt | while read ID ; do fileid=$(echo "$ID" | awk -F "/" '{print $2}'); cat <(printf 'chr\tstrand\tstart\tend\t'${fileid/_stats/}'\n') <(grep -P -f candidate_introns.txt $ID | awk -F'\t' '{ print $2"\t"$3"\t"$4"\t"$5"\t"$6 }') > ${ID}_cand ; done ;
+
+cat <(find . -name "*i_data.ctab_cand" | head -1 | while read file ; do cat $file | awk '{print $1"\t"$2"\t"$3"\t"$4}' ; done;) > table_i_all
+
+find . -name "*i_data.ctab_cand" | while read file ; do paste -d'\t' <(cat table_i_all) <(cat $file | awk '{print $5}') > table_i_all_temp; mv table_i_all_temp table_i_all; done ;
+```
 
 
-### (C) Aggregate across all the files and candidate transcripts
+Obtaining the transcript-level expression information for candidates.
+```
+ls ./*stats/t_data.ctab > ctablist.txt
 
+cat ctablist.txt | while read file ; do echo "stringtieExpressionFrac.py $file" >> stringtieExpressionFracCommands.txt ; done;
+parallel_GNU -j <number of jobs> < stringtieExpressionFracCommands.txt
+
+ls ./*stats/t_data.ctab_frac_tot > ctab_frac_tot_files.txt
+ls ./*stats/t_data.ctab_tot > ctab_tot_files.txt
+
+cat <(echo "TranscriptID") <(find . -name "*ctab_frac_tot" | head -1 | while read file ; do sort $file | awk '{print $1}' ; done;) > table_frac_tot
+cat ctab_frac_tot_files.txt | while read file ; do fileid=$(echo "$file" | awk -F "/" '{print $2}') ; paste -d'\t' <(cat table_frac_tot) <(cat <(echo ${fileid/_stats/}) <(sort $file | awk '{print $2}')) > table_frac_tot_temp; mv table_frac_tot_temp table_frac_tot; done ;
+
+cat <(echo "TranscriptID") <(find . -name "*ctab_tot" | head -1 | while read file ; do sort $file | awk '{print $1}' ; done;) > table_tot
+cat ctab_tot_files.txt | while read file ; do fileid=$(echo "$file" | awk -F "/" '{print $2}') ; paste -d'\t' <(cat table_tot) <(cat <(echo ${fileid/_stats/}) <(sort $file | awk '{print $2}')) > table_tot_temp; mv table_tot_temp table_tot; done ;
+```
 
 ## 11. Quantification processing, sample identification, and final table creation
+
 
 
 
