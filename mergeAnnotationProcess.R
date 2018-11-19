@@ -1,6 +1,8 @@
 #!/usr/bin/env Rscript
 library('Xmisc')
 
+load('Step6.RData')
+
 #Default parameters
 annotationFile <- 'reference_merged_candidates.gff3_annotated_filtered_test_all'
 
@@ -16,8 +18,6 @@ if (!identical(argsparse$f, character(0))){
 }
 
 #The Rsession from previous steps is reloaded
-load('Step6.RData')
-
 
 annotatedcufftranscripts <-read.delim(annotationFile, sep = "\t", stringsAsFactors = FALSE, header = FALSE)
 columnlabels <- c("transcriptname", "type1", "gene1", "chr1", "start1", "end1", "exonintron1", "number1" ,"startcodon1" , "transcriptstart1", "transcriptend1", "elements1", "id1", "splicing", "type2", "gene2", "chr2", "start2", "end2", "exonintron2", "number2" ,"startcodon2", "transcriptstart2", "transcriptend2", "elements2", "id2", "chromtrans", "starttrans", "endtrans", "transcoord", "intronanno", "chrTE", "startTE", "endTE", "subfamTE", "numTE", "strandTE", "strand")

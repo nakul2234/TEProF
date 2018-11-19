@@ -1,6 +1,9 @@
 #!/usr/bin/env Rscript
 library('Xmisc')
 
+#This was created by Step 4 and has the data needed about each candidate.
+load('Step4.RData')
+
 #Default parameters
 maxReadMin <- 10
 minStartRead <- 1
@@ -38,9 +41,6 @@ print(paste0("Read Support Minimum in 1 File: ", maxReadMin))
 print(paste0("PE Chimeric Read Support: ", minStartRead))
 print(paste0("Exonization Percentage Maximum: ", maxPerEndRead))
 print(paste0("Distance Upstream TE must be from start of reference transcript: ", distanceTEMax))
-
-#This was created by Step 4 and has the data needed about each candidate.
-load('Step4.RData')
 
 readstats <- read.delim('filter_read_stats.txt', sep = "\t", stringsAsFactors = FALSE, header = FALSE)
 colnames(readstats) <- c('uniqid_and_file_name', 'read', 'startread', 'endread', 'filetype')

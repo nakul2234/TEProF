@@ -2,6 +2,8 @@
 library('Xmisc')
 library('reshape2')
 
+load('Step10.RData')
+
 #Get the directory of the rnapipeline scripts
 initial.options <- commandArgs(trailingOnly = FALSE)
 file.arg.name <- "--file="
@@ -52,8 +54,6 @@ print(paste0("Minimum Intron Read for Presence: ", minIntronRead))
 print(paste0("Minimum Gene FPKM: ", minGeneFPKM))
 print(paste0("Minimum Fraction of Gene FPKM: ", minFracFPKM))
 print(paste0("ArgumentFile: ", argumentFile))
-
-load('Step10.RData')
 
 fracexpressiontable <- read.delim("table_frac_tot_cand",header=FALSE, stringsAsFactors = FALSE)
 fracexpressiontable <- as.data.frame(t(fracexpressiontable))
