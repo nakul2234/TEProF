@@ -521,7 +521,7 @@ finalStatisticsOutput.R <options>
 (1) All TE-derived Alternative Isoforms Statistics.xlsx: A file with the final statistics calculated for each candidate. There is also data on the gene expression in both groups (treatment and normal), fraction of gene expression (treatment and normal), the number of reads to main splicing intron (treatment and normal), and treatment enrichment.
 
 Note:
-> The **Treatment Count** and **Normal Count** columns are calculated based on the numebr of files in which the candidate passes the thresholds set on fraction of expression, total gene expression, and number of reads spanning the main splicing intron. The final table has all the
+> The **Treatment Count** and **Normal Count** columns are calculated based on the numberr of files in which the candidate passes the thresholds set on fraction of expression, total gene expression, and number of reads spanning the main splicing intron. The final table has all the
 > data used for this, so the user can try using different thresholds to optimize candidate presence based on their data. 
  
 (2) allCandidateStatistics.tsv: file with expression, fraction expression, and intron junction read information across all the samples for all the candidates. 
@@ -534,5 +534,9 @@ Remove old RData, the final one will have all data from previous ones.
 ```
 rm Step6.RData
 ```
+
+#Questions?
+
+If you have any questions, please contact: nakul.m.shah@wustl.edu or log an issue on this Github page.
 
 
