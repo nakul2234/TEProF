@@ -16,20 +16,30 @@ cufflinks >= 2.2.1
 
 python 2.7 (cPickle, pytabix 0.1)
 
-R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc, reshape2) 
+R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc, reshape2)
+
+Download a copy of this repo
+
+```
+git clone https://github.com/nakul2234/rnapipeline.git
+```
+
+Add the folder to your $PATH
 
 ## (2) Reference Files
 
 These are the required reference files for the code to work. The `arguments.txt` file that is within the directory of the scripts or that can be specified by the user will define where these files are located. We have default files ready for hg38, and plan on providing other assemblies as well. 
 
-### (A) Default hg38
+### (A) Defaults
 
 We have created a default set of reference files for hg38. For simple use, download the directory, place it in the rnapipeline folder, and extract. Make sure to update the arguments.txt file with the full path of these files (Explained below in Usage).
 
 Download Link hg38: [External Download Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/rnapipelinerefhg38.tar.gz 'Compressed Directory')
 
+Download Link hg19: [External Download Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/rnapipelinerefhg19.tar.gz 'Compressed Directory')
+
 Note:
->If you use these default files then you can skip B-E. However, be sure to look at E if you want to use a list of genes different then the default list that is based on the publication. 
+>If you use these default files then you can skip B-F. However, be sure to look at F if you want to use a list of genes different then the default list that is based on the publication. 
 
 ### (B) Gencode Dictionary
 
@@ -53,9 +63,9 @@ This will generate 2 files: (1) `genecode_plus.dic` and (2) `genecode_minus.dic`
 
 ### (C) Repeatmasker Files
 
-Though this pipeline is optimized for looking at repetitive-element derived transcripts, any bed file for alternative promoter locations can be used. 
+Though this pipeline is optimized for looking at repetitive-element derived transcripts, theoretically any bed file for alternative promoter locations can be used. 
 
-1. Download Repeatmasker Annotation. We use the one from the UCSC Table Browser: [External Link](https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=693256623_kh0RR0o6vajdA2WLLTA8OeaAPNB6&clade=mammal&org=Human&db=hg38&hgta_group=rep&hgta_track=hg38Patch11&hgta_table=0&hgta_regionType=genome&position=chr12%3A20816734-20825794&hgta_outputType=bed&hgta_outFileName=repeats.bed 'UCSC Table Browser')
+1. Download Repeatmasker Annotation BED. We use the one from the UCSC Table Browser (For this step download it in BED format): [External Link](https://genome.ucsc.edu/cgi-bin/hgTables?hgsid=693256623_kh0RR0o6vajdA2WLLTA8OeaAPNB6&clade=mammal&org=Human&db=hg38&hgta_group=rep&hgta_track=hg38Patch11&hgta_table=0&hgta_regionType=genome&position=chr12%3A20816734-20825794&hgta_outputType=bed&hgta_outFileName=repeats.bed 'UCSC Table Browser')
 
 Note:
 > If you would like to check for overlap with other features such as CpG islands or you need to create a custom file of your features, make sure it has the following format and tab-delimitted:
@@ -76,7 +86,20 @@ tabix -p bed rmsk.bed.gz
 
 4. Both the bgzipped file and the tabix index must be in the same directory
 
-### (D) Intron Annotations (Optional)
+
+### (D) Repeatmasker Subfamily, Family, Class Mapping
+
+There needs to be a file that will map the subfamily of the TEs to Class and Family.
+
+This can be done with repeatmasker. Download Repeatmasker Annotation, but this time with All fields NOT the Bed format. This should have 11 columns as well as a header column. ('output format:' field should have 'all fields from selected table')
+
+To extract these annotations from that file:
+
+```
+cat repeatmasker.lst | awk 'NR>1{print $11"\t"$12"\t"$13}' | sort | uniq > repeatmasker_hg19_description_uniq.lst
+```
+
+### (E) Intron Annotations (Optional)
 
 A useful feature that can be used is that the pipeline will annotate the first intron of each transcript based on a reference file. This can help in deciding whether a candidate has been previously annotated as an alternative transcript. 
 
@@ -122,7 +145,7 @@ tabix -p bed <OUTPUT_sorted.gtf>_introns_minus_sorted.gz
 
 7. Both the bgzipped file and the tabix index need to be in the same folder
 
-### (E) Gene Filter List (Optional)
+### (F) Gene Filter List (Optional)
 
 For large sets of analysis, it might be computationally advantageous to limit the analysis to only a small set of genes for subsequent analysis. Create a file with a genesymbol per line. Example:
 
@@ -181,6 +204,8 @@ minusintron /bar/nshah/reference/gencode.v25.annotation.sorted.gtf_introns_minus
 ### Required Arguments
 
 **rmsk:** tabix formatted bed6 files with repeatmasker or other file that user wants to check start location for
+
+**rmskannotationfile:** a tab delimitted with 3 columns: subfamily class family
 
 **gencodeplusdic:** Dictionary of all gencode elements including introns and exons for the plus (+) strand
 
@@ -276,7 +301,7 @@ aggregateProcessedAnnotation.R <options>
 
 **-k** \<keep none\> (default: no): There can be transcripts from TEs that have splicing, but do not end up splicing into a gene. By default these are removed. This can be changed to yes if the user would like to look at these.
 
-**-f** \<filter for TEs\> (default: yes): Repeatmasker files include many repeats besides TE. This could be an interesting benchmark to compare to, but by default they are removed. The user can specify no if they would like to keep these. 
+**-f** \<filter for TEs\> (default: yes): Repeatmasker files include many repeats besides TE. This could be an interesting benchmark to compare to, but by default they are removed. The user can specify no if they would like to keep these. NOTE: Currently does not work with downstream steps if filter is set to No.
 
 **-a** \<argument file\> (default: \<directory of pipeline\>/arguments.txt): The arguments.txt file location. By default, the arguments.txt file that is in the rnapipeline directory will be used. If another is desired for use then the fullpath of the file can be specified. 
 
@@ -425,7 +450,7 @@ An example of how to create a file with all the commands across multiple bam fil
 ```
 find <bam_directory> -name "*bam" | while read file ; do xbase=${file##*/}; echo "samtools view -q 255 -h "$file" | stringtie - -o "${xbase%.*}".gtf -e -b "${xbase%.*}"_stats -p 2 -m 100 -c 1 -G reference_merged_candidates.gtf" >> quantificationCommands.txt ; done ;
 ```
->Subsequently, the commands in quantificationCommands.txt can be run individually or can be run in parallel (e.g. parallel -j 4 < quantificationCommands.txt)
+>Subsequently, the commands in quantificationCommands.txt can be run individually or can be run in parallel (e.g. parallel_GNU -j 4 < quantificationCommands.txt)
 
 Note:
 >The -b flag outputs all the stats to a new folder. This is in a format that is compatible with the [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github')  downstream pipeline that can be used instead of our own custom methods of transcript identification. 
@@ -532,10 +557,10 @@ Note:
 Remove old RData, the final one will have all data from previous ones.
 
 ```
-rm Step6.RData
+rm Step10.RData
 ```
 
-#Questions?
+# Questions?
 
 If you have any questions, please contact: nakul.m.shah@wustl.edu or log an issue on this Github page.
 
