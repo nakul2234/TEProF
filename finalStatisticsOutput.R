@@ -43,7 +43,7 @@ if (!identical(argsparse$f, character(0))){
 }
 
 if (!identical(argsparse$a, character(0))){
-  argumentFile <- as.numeric(argsparse$a)
+  argumentFile <- argsparse$a
 }
 
 print("Arguments")
