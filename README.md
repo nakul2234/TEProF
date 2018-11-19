@@ -515,8 +515,15 @@ Obtaining the transcript-level expression information for candidates.
 ls ./*stats/t_data.ctab > ctablist.txt
 
 cat ctablist.txt | while read file ; do echo "stringtieExpressionFrac.py $file" >> stringtieExpressionFracCommands.txt ; done;
-parallel_GNU -j <number of jobs> < stringtieExpressionFracCommands.txt
+```
 
+Run the commands in stringtieExpressionFracCommands.txt (Much faster if done in parallel)
+```
+parallel_GNU -j <number of jobs> < stringtieExpressionFracCommands.txt
+```
+
+Aggregate the stats
+```
 ls ./*stats/t_data.ctab_frac_tot > ctab_frac_tot_files.txt
 ls ./*stats/t_data.ctab_tot > ctab_tot_files.txt
 
