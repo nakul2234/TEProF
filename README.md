@@ -157,7 +157,7 @@ PKIB
 ...
 ```
 
-## Input Files
+## (3) Input Files
 
 Our pipeline is optimized to work with `stringtie` generated gtf files. We have not tested it with other assembly software such as `cufflinks`. We plan on adding support for other input file styles in future releases. 
 
@@ -167,7 +167,8 @@ With raw FASTQ files, the following steps need to be taken:
 
 2. Adapter Trimming
 
-3. Alignment: We have used either [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf 'star') or [HISAT2](https://ccb.jhu.edu/software/hisat2/manual.shtml 'hisat2'). Make sure that the -XS tag will be outputted since the splice-aware assembly software such as `stringtie` has the information it needs. 
+3. Alignment: We  normally user and prefer [STAR](https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf 'star').  Make sure that the -XS tag will be outputted since the splice-aware assembly software such as `stringtie` has the information it needs.
+[HISAT2](https://ccb.jhu.edu/software/hisat2/manual.shtml 'hisat2') can also be used, but HISAT uses 60 instead of 255 for uniquelly mapped reads which will interfere with code in future steps.
 
 Note:
 
@@ -182,6 +183,8 @@ Example of Command for steps 4 & 5:
 ```
 samtools view -q 255 -h EGAR00001163970_636782_1_1.rnaseq.fastqAligned.sortedByCoord.out.bam | stringtie - -o EGAR00001163970_636782_1_1.rnaseq.fastqAligned.sortedByCoord.out.gtf -m 100 -c 1
 ```
+Note:
+> Use -q 60 for hisat2 aligned files
 
 # Usage
 
@@ -357,6 +360,11 @@ Note:
 >(-j) will tell parallel_GNU the number of processes
 >The alias for parallel_GNU might just parallel or something else on your server configuration
 
+If using hisat2, do this before running the above commands so that samtools -q 60 is used
+```
+sed -i 's/ 255 / 60 /g' filterreadcommands.txt
+```
+
 ### (D) Combine all the read information files
 
 ```
@@ -384,7 +392,7 @@ filterReadCandidates.R <options>
 
 **-r** \<minimum reads in TE\> (default: 10): The number of paired end reads required in a single file that start within the TE.
 
-**-s** \<min start read\> (default: 2): The number of paired-end reads that span distance from TE to gene required across all files.  
+**-s** \<min start read\> (default: 1): The number of paired-end reads that span distance from TE to gene required across all files.  
 
 **-e** \<exonization read support max percent\> (default: .15): Maximum percentage of files that have reads that start in gene and go to TE of interest, suggesting exonization rather than a promoter event
 
@@ -411,6 +419,7 @@ Using the [cufflinks](http://cole-trapnell-lab.github.io/cufflinks/ 'Cufflinks G
 
 ```
 gffread -E candidate_transcripts.gff3 -T -o candidate_transcripts.gtf
+echo candidate_transcripts.gtf > cuffmergegtf.list
 cuffmerge -o ./merged_asm_full -g ~/reference/gencode.v25.basic.annotation.gtf cuffmergegtf.list
 mv ./merged_asm_full/merged.gtf reference_merged_candidates.gtf
 ```
@@ -451,6 +460,8 @@ An example of how to create a file with all the commands across multiple bam fil
 find <bam_directory> -name "*bam" | while read file ; do xbase=${file##*/}; echo "samtools view -q 255 -h "$file" | stringtie - -o "${xbase%.*}".gtf -e -b "${xbase%.*}"_stats -p 2 -m 100 -c 1 -G reference_merged_candidates.gtf" >> quantificationCommands.txt ; done ;
 ```
 >Subsequently, the commands in quantificationCommands.txt can be run individually or can be run in parallel (e.g. parallel_GNU -j 4 < quantificationCommands.txt)
+>
+>hisat2 users: 255 needs to be replaced with 60 again
 
 Note:
 >The -b flag outputs all the stats to a new folder. This is in a format that is compatible with the [Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github')  downstream pipeline that can be used instead of our own custom methods of transcript identification. 
@@ -562,6 +573,6 @@ rm Step10.RData
 
 # Questions?
 
-If you have any questions, please contact: nakul.m.shah@wustl.edu or log an issue on this Github page.
+If you have any questions, please contact: nakul.m.shah@wustl.edu
 
 
