@@ -9,7 +9,7 @@ script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initia
 script.basename <- dirname(script.name)
 
 #Default parameters
-parseTreatment <- 'filtered'
+parseTreatment <- ''
 exon1LengthMax <- 2588
 exonSkipMax <- 2
 totalMin <- 1

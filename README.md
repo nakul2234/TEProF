@@ -290,7 +290,7 @@ aggregateProcessedAnnotation.R <options>
 
 **Options with Defaults:**
 
-**-e** \<ext_treatment\> (default: filtered): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment since all the c files should have filter in their name. 
+**-e** \<ext_treatment\> (default: ''): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment.
 
 **-l** \<exon 1 length max\> (default: 2588): The maximum length of exon 1. We are using the 99th percentile of gencode v25 transcripts
 
@@ -548,7 +548,7 @@ finalStatisticsOutput.R <options>
 ```
 **Options with Defaults:**
 
-**-e** \<ext_treatment\> (default: filtered): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment since all the c files should have filter in their name. 
+**-e** \<ext_treatment\> (default: ''): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment.
 
 **-i** \<minimum reads spanning intorn junction\> (default: 1): The minimum number of reads across an intron junction needed to state that a candidate is present. 
 

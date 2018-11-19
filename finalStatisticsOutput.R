@@ -12,7 +12,7 @@ script.basename <- dirname(script.name)
 minGeneFPKM <- 1
 minFracFPKM <- .1
 minIntronRead <- 1
-parseTreatment <- 'filtered'
+parseTreatment <- ''
 argumentFile <- paste0(script.basename,'/arguments.txt')
 
 #User argument parsing code
