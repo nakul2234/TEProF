@@ -18,7 +18,7 @@ argsparse <- parser$get_args()
 
 #Argument parse to change defaults
 if (!identical(argsparse$r, character(0))){
-  maxReadMin <- argsparse$r
+  maxReadMin <- as.numeric(argsparse$r)
 }
 
 if (!identical(argsparse$s, character(0))){

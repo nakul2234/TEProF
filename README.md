@@ -16,7 +16,7 @@ cufflinks >= 2.2.1
 
 python 2.7 (cPickle, pytabix 0.1)
 
-R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc) 
+R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc, reshape2) 
 
 ## (2) Reference Files
 
@@ -305,12 +305,12 @@ Note:
 >Bam file naems should be the same as the gtf files that were the oriignal input for the pipeline except the extention is different.
 >It is recommended that paired-end reads are used. Single-end performance is not as robust.
 
-(A) Make the directory where the stats will be stored
+### (A) Make the directory where the stats will be stored
 ```
 mkdir filterreadstats
 ```
 
-(B) Create commands to calculate read information
+### (B) Create commands to calculate read information
 
 ```
 commandsmax_speed.py filter_combined_candidates.tsv <bam file location*>
@@ -322,7 +322,7 @@ Note:
 
 (1) filterreadcommands.txt: A list of all the commands needed to calculate read information. These commands use a combination of samtools, bedtools, and custom scripts. For every combination of candidate and bamfile present in teh dataset, there will be a command.
 
-(C) Run the commands
+### (C) Run the commands
 It is reccomended that [parallel_GNU](https://www.gnu.org/software/parallel/) or a similar method be used to run the list of commands in parallel. 
 
 ```
@@ -332,7 +332,7 @@ Note:
 >(-j) will tell parallel_GNU the number of processes
 >The alias for parallel_GNU might just parallel or something else on your server configuration
 
-(D) Combine all the read information files
+### (D) Combine all the read information files
 
 ```
 find ./filterreadstats -name "*.stats" -type f -maxdepth 1 -print0 | xargs -0 -n128 -P16 grep e > resultgrep_filterreadstatsdone.txt
@@ -449,6 +449,8 @@ mergeAnnotationProcess.R <options>
  
 (2) candidate_names.txt: The trnascript names for all candidate transcripts that are left
 
+(3) Step6.RData: Workspace file with data loaded from R session. Subsequent steps load this to save time.
+
 Remove step 6 session data that is no longer needed.
 
 ```
@@ -487,10 +489,50 @@ cat ctab_frac_tot_files.txt | while read file ; do fileid=$(echo "$file" | awk -
 
 cat <(echo "TranscriptID") <(find . -name "*ctab_tot" | head -1 | while read file ; do sort $file | awk '{print $1}' ; done;) > table_tot
 cat ctab_tot_files.txt | while read file ; do fileid=$(echo "$file" | awk -F "/" '{print $2}') ; paste -d'\t' <(cat table_tot) <(cat <(echo ${fileid/_stats/}) <(sort $file | awk '{print $2}')) > table_tot_temp; mv table_tot_temp table_tot; done ;
+
+cat <(head -1 table_frac_tot) <(grep -Ff candidate_names.txt table_frac_tot) > table_frac_tot_cand
+cat <(head -1 table_tot) <(grep -Ff candidate_names.txt table_tot) > table_tot_cand
 ```
 
 ## 11. Quantification processing, sample identification, and final table creation
 
+The final script will aggregate teh stringtie annotation and intron coverage information for the candidates. It will predict presence based on parameters set by the user. The tables that are outputted by this step can also be used by the user to do more advanced statistical analysis.
 
+Run the program
+
+```
+finalStatisticsOutput.R <options>
+```
+**Options with Defaults:**
+
+**-e** \<ext_treatment\> (default: filtered): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment since all the c files should have filter in their name. 
+
+**-i** \<minimum reads spanning intorn junction\> (default: 1): The minimum number of reads across an intron junction needed to state that a candidate is present. 
+
+**-g** \<minimum gene fpkm\> (default: 1): The minimum total FPKM of the gene required. (If you plan to do differential gene expression analysis instead, this can be put as 0 to keep everything)
+
+**-f** \<minimum fraction candidate\> (default: 0.1): The minimum fraction of the total gene expression required for a candidate to be counted as being expressed. (If you plan to do differential gene expression analysis instead, this can be put as 0 to keep everything)
+
+**-a** \<argument file\> (default: \<directory of pipeline\>/arguments.txt): The arguments.txt file location. By default, the arguments.txt file that is in the rnapipeline directory will be used. If another is desired for use then the fullpath of the file can be specified. 
+
+
+**Output File(s):**
+
+(1) All TE-derived Alternative Isoforms Statistics.xlsx: A file with the final statistics calculated for each candidate. There is also data on the gene expression in both groups (treatment and normal), fraction of gene expression (treatment and normal), the number of reads to main splicing intron (treatment and normal), and treatment enrichment.
+
+Note:
+> The **Treatment Count** and **Normal Count** columns are calculated based on the numebr of files in which the candidate passes the thresholds set on fraction of expression, total gene expression, and number of reads spanning the main splicing intron. The final table has all the
+> data used for this, so the user can try using different thresholds to optimize candidate presence based on their data. 
+ 
+(2) allCandidateStatistics.tsv: file with expression, fraction expression, and intron junction read information across all the samples for all the candidates. 
+ 
+(3) Step11.RData: Workspace file with data loaded from R session. Can be loaded by user to save time to do more advanced analysis. 
+
+
+Remove old RData, the final one will have all data from previous ones.
+
+```
+rm Step6.RData
+```
 
 
