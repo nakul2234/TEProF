@@ -343,8 +343,16 @@ mkdir filterreadstats
 ```
 commandsmax_speed.py filter_combined_candidates.tsv <bam file location*>
 ```
+
+If using single-end RNa-seq files, use the following command
+```
+commandsmax_speed_se.py filter_combined_candidates.tsv <bam file location*>
+```
+
 Note:
 >*the bam file location should be a full path and should end in a forward slash (e.g. /scratch/nakul/epikate/)
+
+
 
 **Output File(s):**
 

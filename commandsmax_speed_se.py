@@ -40,7 +40,7 @@ with open(sys.argv[1],"r") as filteredfile:
 			commandroot = 'samtools view -q 255 -h ' + bamfileloc + filename + '.bam ' + chromosome + ':' + str(startloc) + '-' + str(endloc) + " > " + uniqid + '--' + filename + ".sam" + ' ; samtools view -q 255 ' + bamfileloc + filename + '.bam ' + chromosome + ':' + str(startlocTE) + '-' + str(endlocTE) + ' | cut -f1  | sort | uniq > ' + uniqid + '--' + filename + 'IDs.txt ; cat <(samtools view -H ' + uniqid + '--' + filename + '.sam) <(grep -w -F -f ' + uniqid + '--' + filename + 'IDs.txt ' + uniqid + '--' + filename + '.sam)'
 
 
-		commandfinish = ' | samtools sort -n -m 1G - | bedtools bamtobed -i stdin 2>/dev/null | ~/scripts/rmsk_annotate_bedse_speed.py ' + chromosome + ',' + startlocTE + ',' + endlocTE + ' ' + elementsvec + ' ' + strand + ' ' + number1 + ' ' + number2 + ' > ./filterreadstats/' +  uniqid + '--' + filename + ".stats ; " + "rm " +  uniqid + '--' + filename + ".sam ; rm " +  uniqid + '--' + filename + 'IDs.txt'
+		commandfinish = ' | samtools sort -n -m 1G - | bedtools bamtobed -i stdin 2>/dev/null | ' + sys.path[0] + '/rmsk_annotate_bedse_speed.py ' + chromosome + ',' + startlocTE + ',' + endlocTE + ' ' + elementsvec + ' ' + strand + ' ' + number1 + ' ' + number2 + ' > ./filterreadstats/' +  uniqid + '--' + filename + ".stats ; " + "rm " +  uniqid + '--' + filename + ".sam ; rm " +  uniqid + '--' + filename + 'IDs.txt'
 	
 		commandall = commandroot + commandfinish
 		print >> fout, commandall
