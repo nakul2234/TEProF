@@ -159,6 +159,8 @@ annotatedcufftranscripts$tumor_intronjuncount_mean <- apply(annotatedcufftranscr
 
 annotatedcufftranscripts$normal_intronjuncount_mean <- apply(annotatedcufftranscripts[,c('transcriptname','gene2')],1,function(x) mean(fracexpressiontable.m[fracexpressiontable.m$variable==x[1] & !grepl(parseTreatment,fracexpressiontable.m$TranscriptID), c('intronread')]))
 
+annotatedcufftranscripts <- annotatedcufftranscripts[annotatedcufftranscripts$duplicated == FALSE,]
+
 numberTumorSamples <- length(unique(fracexpressiontable.m$TranscriptID[grepl(parseTreatment, fracexpressiontable.m$TranscriptID)]))
 numberNormalSamples <- length(unique(fracexpressiontable.m$TranscriptID[!grepl(parseTreatment, fracexpressiontable.m$TranscriptID)]))
 
@@ -190,7 +192,7 @@ colnames(exportTable2) <- c('Subfam','Class',	'Family',	'Chr TE',	'Start TE',	'E
 
 library(xlsx)
 exportTable2 <- exportTable2[order(-exportTable2$`Treatment Total`),]
-write.xlsx(exportTable2, "All TE-derived Alternative Isoforms Statistics.xlsx")
+write.xlsx(exportTable2, "All TE-derived Alternative Isoforms Statistics.xlsx", row.names = FALSE)
 
 ##Expression, fraction expression, and intron coverage information across all of the files.
 exportAllStats <- fracexpressiontable.m[,c('TranscriptID', "variable", "totexpression", "fractotal", "intronread")]

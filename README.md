@@ -558,7 +558,7 @@ finalStatisticsOutput.R <options>
 
 **-e** \<ext_treatment\> (default: ''): The label in the treatment file names that will identify them. If there is not a treatment versus untreated experimental design, the default will call everything as treatment.
 
-**-i** \<minimum reads spanning intorn junction\> (default: 1): The minimum number of reads across an intron junction needed to state that a candidate is present. 
+**-i** \<minimum reads spanning intron junction\> (default: 1): The minimum number of reads across an intron junction needed to state that a candidate is present. 
 
 **-g** \<minimum gene fpkm\> (default: 1): The minimum total FPKM of the gene required. (If you plan to do differential gene expression analysis instead, this can be put as 0 to keep everything)
 
