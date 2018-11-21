@@ -58,32 +58,24 @@ names(stataggregate)[names(stataggregate) == 'Group.1'] <- 'uniqid'
 
 res2stat<- merge(resexonlength, stataggregate, by=c('uniqid'), all.x = TRUE, all.y = FALSE)
 
-startreadper <- c()
-endreadper <- c()
-seper <- c()
-distanceTE <- c()
-for (idcandidate in res2stat$uniqid){
-  testtable <- filter_combined_table_final_stat[filter_combined_table_final_stat$uniqid == idcandidate, ]
+readAggregateStats <- function(testtable){
   totalsamples <- nrow(testtable)
   totalsamplesstart <- sum(testtable$startread > 0)
   totalsamplesend <- sum(testtable$endread > 0)
   sesamples <- sum(testtable$filetype == 'se')
-  startreadper <- c(startreadper, totalsamplesstart/totalsamples)
-  endreadper <- c(endreadper, totalsamplesend/totalsamples)
-  seper <- c(seper, sesamples/totalsamples)
-  
-  row1 <- testtable[1,]
-  strand1 <- row1$strand
-  if (strand1 == '+'){
-    distanceTE <- c(distanceTE, as.numeric(row1$transcriptstart2) - row1$endTE)
-  } else {
-    distanceTE <- c(distanceTE, row1$startTE - as.numeric(row1$transcriptend2))
-  }
+  startreadper <- totalsamplesstart/totalsamples
+  endreadper <- totalsamplesend/totalsamples
+  seper <- sesamples/totalsamples
+  return(c(startreadper, endreadper, seper))
 }
-res2stat$endreadper <- endreadper
-res2stat$startreadper <- startreadper
-res2stat$seper <- seper
-res2stat$distanceTE <- distanceTE
+
+resultsinitial <- apply(res2stat[,c('gene2','uniqid')], 1, function(x) readAggregateStats(filter_combined_table_final_stat[filter_combined_table_final_stat$uniqid == x[2], ]))
+
+resultsinitial  <- data.frame(t(resultsinitial))
+colnames(resultsinitial) <- c("startreadper", "endreadper", "seper")
+
+res2stat<- cbind(res2stat, resultsinitial)
+res2stat$distanceTE <- apply(res2stat[,c('strand','transcriptstart2','transcriptend2','startTE','endTE')],1,function(x) if (x[1] == '+'){return(as.numeric(x[2]) - as.numeric(x[5]))}else{return(as.numeric(x[4])-as.numeric(x[3]))})
 
 res2statfil <- res2stat[res2stat$endreadper <= maxPerEndRead, ]
 res2statfil <- res2statfil[res2statfil$startread >= minStartRead,]
