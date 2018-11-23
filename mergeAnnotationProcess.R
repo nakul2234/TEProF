@@ -46,7 +46,7 @@ getIntronJun <- function(structurestring, exonstart, exonend){
   }
   
   if (strand == "+"){
-    for (i in seq(2,length(elementsvec), by = 2)){
+    for (i in seq(4,length(elementsvec), by = 2)){
       if (elementsvec[i] >= exonstart){
         intron1start = elementsvec[i-2] + 1
         intron1end = elementsvec[i-1] - 1
@@ -57,7 +57,7 @@ getIntronJun <- function(structurestring, exonstart, exonend){
     
   } else {
     elementsvec <- sort(elementsvec, decreasing = TRUE)
-    for (i in seq(2,length(elementsvec), by = 2)){
+    for (i in seq(4,length(elementsvec), by = 2)){
       if (elementsvec[i] <= exonend){
         intron1start = elementsvec[i-1] + 1
         intron1end = elementsvec[i-2] - 1
