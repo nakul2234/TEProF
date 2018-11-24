@@ -73,8 +73,8 @@ results <- as.data.frame(t(results))
 colnames(results) <- c("intronjunstart","intronjunend")
 annotatedcufftranscripts <- cbind(annotatedcufftranscripts, results)
 
-grepintrons <- paste0(annotatedcufftranscripts$chrTE, '\\t\\', annotatedcufftranscripts$strand,'\\t',annotatedcufftranscripts$intronjunstart,'\\t',annotatedcufftranscripts$intronjunend)
-grepintrons <- paste(grepintrons, collapse = '|')
+grepintrons <- paste0(annotatedcufftranscripts$chrTE, "\t", annotatedcufftranscripts$strand,"\t",annotatedcufftranscripts$intronjunstart,"\t",annotatedcufftranscripts$intronjunend)
+grepintrons <- paste(grepintrons, collapse = '\n')
 
 write(grepintrons, file = "candidate_introns.txt")
 write(annotatedcufftranscripts$transcriptname, file = "candidate_names.txt")
