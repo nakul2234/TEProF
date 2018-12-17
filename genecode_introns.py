@@ -29,37 +29,36 @@ with open(sys.argv[1]) as genecode:
                 #temp[6] strand
                 #temp[-1] transcript ID
                 
-		tempstr= temp[-1]
+                tempstr= temp[-1]
+
                 
-                # Only those transcripts that are KNOWN (Might change this)
-                if ('KNOWN' in temp[-2]):
                         
                         # Needs to reset the transcript label every time a new transcript is reached
-                        if temp[2]=='transcript':
-                                current_temp = temp
-                                current_tempstr = tempstr
-                                if temp[6]=='+':
-                                        
-                                        # When the chromosome is not in the dictionary, I make a new chromosome key with a empty dictionary as the result 
-                                        if temp[0] not in plus:
-                                                plus[temp[0]]={}
-                                        
-                                        # Within the dictionary of the current chromosome, I make a new transcript key (start, end, ID) with a empty dictionary as the result 
-                                        plus[temp[0]][(int(temp[3]),int(temp[4]),tempstr)]={}
-                                else:
-                                        if temp[0] not in minus:
-                                                minus[temp[0]]={}
-                                        minus[temp[0]][(int(temp[3]),int(temp[4]),tempstr)]={}
-
-
-                        elif temp[2]=='exon':
+                if temp[2]=='transcript':
+                        current_temp = temp
+                        current_tempstr = tempstr
+                        if temp[6]=='+':
                                 
-                                # When there is an exon, I make a new key in the current transcript's dictionary with the (start, end) as the key, and then the result is a
-                                # comma-delimitted list of all the metadata for that exon in gencode
-                                if temp[6]=='+':
-                                        plus[temp[0]][(int(current_temp[3]),int(current_temp[4]),current_tempstr)][(int(temp[3]),int(temp[4]))]=",".join(temp).replace("\n","")
-                                else:
-                                        minus[temp[0]][(int(current_temp[3]),int(current_temp[4]),current_tempstr)][(int(temp[3]),int(temp[4]))]=",".join(temp).replace("\n","")
+                                # When the chromosome is not in the dictionary, I make a new chromosome key with a empty dictionary as the result 
+                                if temp[0] not in plus:
+                                        plus[temp[0]]={}
+                                
+                                # Within the dictionary of the current chromosome, I make a new transcript key (start, end, ID) with a empty dictionary as the result 
+                                plus[temp[0]][(int(temp[3]),int(temp[4]),tempstr)]={}
+                        else:
+                                if temp[0] not in minus:
+                                        minus[temp[0]]={}
+                                minus[temp[0]][(int(temp[3]),int(temp[4]),tempstr)]={}
+
+
+                elif temp[2]=='exon':
+                        
+                        # When there is an exon, I make a new key in the current transcript's dictionary with the (start, end) as the key, and then the result is a
+                        # comma-delimitted list of all the metadata for that exon in gencode
+                        if temp[6]=='+':
+                                plus[temp[0]][(int(current_temp[3]),int(current_temp[4]),current_tempstr)][(int(temp[3]),int(temp[4]))]=",".join(temp).replace("\n","")
+                        else:
+                                minus[temp[0]][(int(current_temp[3]),int(current_temp[4]),current_tempstr)][(int(temp[3]),int(temp[4]))]=",".join(temp).replace("\n","")
 
 genecode.close()
 
@@ -136,7 +135,7 @@ for chrom in minus.keys():
                                 start = exons[i][1]+1
                                 end = exons[i+1][0]-1
                                 label = minus[chrom][transcript][exons[i]].split(",")
-				label = label[:]
+                                label = label[:]
                                 label[2] = 'intron'
                                 label[3] = str(start)
                                 label[4] = str(end)
@@ -145,7 +144,7 @@ for chrom in minus.keys():
                                 annotation[8] = 'intron_number {}'.format(n_exons-(i+1)) 
                                 annotationintron = "; ".join(annotation)
                                 label[-3] = annotationintron
-				labelstr = ",".join(label)
+                                labelstr = ",".join(label)
 
                                 introncoord = [chrom, str(start), str(end), labelstr]
                                 

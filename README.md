@@ -38,6 +38,8 @@ Download Link hg38: [External Download Link](https://wangftp.wustl.edu/~nshah/rn
 
 Download Link hg19: [External Download Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/rnapipelinerefhg19.tar.gz 'Compressed Directory')
 
+Download Link mm10: [External Download Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/rnapipelinerefmm10.tar.gz 'Compressed Directory')
+
 Note:
 >If you use these default files then you can skip B-F. However, be sure to look at F if you want to use a list of genes different then the default list that is based on the publication. 
 
@@ -73,6 +75,15 @@ Note:
 > chromosome start end label wildcard strand
 
 2. bgzip the file (bgzip comes with samtools)
+
+Note:
+> The bed file may need to be sorted
+> 
+> Command:
+> cat <BED> | sort -k1,1 -k2,2n > <SORTED.BED>
+
+2. bgzip the file (bgzip comes with samtools)
+
 
 ```
 bgzip rmsk.bed > rmsk.bed.gz
@@ -174,9 +185,11 @@ Note:
 
 > Future steps require sorted and indexed bam files. Thus, outputting sorted BAM files will be beneficial. 
 
-4. Filtering: Due to problems with mapping to repetitive elements, we usually will filter to only include uniquelly mapped reads. 
+4. Sorting and Indexing: The BAM files need to be sorted by position (samtools sort) and need to be indexed (samtools index)
 
-5. Assembly: [STRINGTIE](https://ccb.jhu.edu/software/stringtie/ 'stringtie') Default parameters will work, but for discovering low coverage transcripts we sometimes set the following flags (-c 1 -m 100). Note, future steps will require being able to map the gtf file to the bam file, so the easiest way to do this would be to just change the extension of the files from `*.bam` to `*.gtf` (test1.bam to test1.gtf).
+5. Filtering: Due to problems with mapping to repetitive elements, we usually will filter to only include uniquelly mapped reads. 
+
+6. Assembly: [STRINGTIE](https://ccb.jhu.edu/software/stringtie/ 'stringtie') Default parameters will work, but for discovering low coverage transcripts we sometimes set the following flags (-c 1 -m 100). Note, future steps will require being able to map the gtf file to the bam file, so the easiest way to do this would be to just change the extension of the files from `*.bam` to `*.gtf` (test1.bam to test1.gtf).
 
 Example of Command for steps 4 & 5:
 
@@ -510,7 +523,7 @@ Obtaining intron coverage information
 ```
 find . -name "*i_data.ctab" > ctab_i.txt
 
-cat ctab_i.txt | while read ID ; do fileid=$(echo "$ID" | awk -F "/" '{print $2}'); cat <(printf 'chr\tstrand\tstart\tend\t'${fileid/_stats/}'\n') <(grep -P -f candidate_introns.txt $ID | awk -F'\t' '{ print $2"\t"$3"\t"$4"\t"$5"\t"$6 }') > ${ID}_cand ; done ;
+cat ctab_i.txt | while read ID ; do fileid=$(echo "$ID" | awk -F "/" '{print $2}'); cat <(printf 'chr\tstrand\tstart\tend\t'${fileid/_stats/}'\n') <(grep -f candidate_introns.txt $ID | awk -F'\t' '{ print $2"\t"$3"\t"$4"\t"$5"\t"$6 }') > ${ID}_cand ; done ;
 
 cat <(find . -name "*i_data.ctab_cand" | head -1 | while read file ; do cat $file | awk '{print $1"\t"$2"\t"$3"\t"$4}' ; done;) > table_i_all
 
