@@ -292,20 +292,21 @@ def processannotation(returnanno, plusminus, previous):
         
         splitanno = split1[8].split("\"; ")
         
-        splittemp = splitanno[1].split(" \"")
-        transcriptid.append(splittemp[1])
+        tempdesc = split1[8].split("transcript_id \"")[1]
+        transcriptid.append(tempdesc.split("\";")[0])
         
-        splittemp = splitanno[2].split(" \"")
-        genetype.append(splittemp[1])
+        tempdesc = split1[8].split("gene_type \"")[1]
+        genetype.append(tempdesc.split("\";")[0])
         
-        splittemp = splitanno[4].split(" \"")
-        genename.append(splittemp[1])
+        tempdesc = split1[8].split("gene_name \"")[1]
+        genename.append(tempdesc.split("\";")[0])
         
-        splittemp = splitanno[8].split(";  ")
-        splittemp2 = splittemp[0].split(" ")
-        
-        # Next code block will get the number of the exon or intron
-        exonintronnum = int(splittemp2[1].replace(";",""))
+        if exonintronstat == "intron":
+            tempdesc = split1[8].split("intron_number ")[1]
+            exonintronnum = int(tempdesc.split(";")[0])
+        else:
+            tempdesc = split1[8].split("exon_number ")[1]
+            exonintronnum = int(tempdesc.split(";")[0])
         
         startcodon.append(splitvec[1]) #Check if this is correct
         exonnumber = int(split1[-1])
