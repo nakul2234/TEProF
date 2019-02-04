@@ -7,7 +7,7 @@ import sys
 distbuffer = 1000
 
 bamfileloc = sys.argv[2]
-fout=open('filterreadcommands.txt','w')
+fout=open('filterreadcommands_se.txt','w')
 
 with open(sys.argv[1],"r") as filteredfile:
 	for eachline in filteredfile:
