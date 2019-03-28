@@ -1,3 +1,7 @@
+# **TEProF** (**T**ransposable **E**lement **Pro**moter **F**inder)  
+
+# Outline
+
    * [Summary](#summary)
    * [Requirements](#requirements)
       * [(1) Software](#1-software)
@@ -34,9 +38,13 @@
 
 # Summary
 
-These scripts were the ones used in: <Insert Paper Citation Here>
+TEProF v0.1
+
+These scripts were the ones used in: http://dx.doi.org/10.1038/s41588-019-0373-3
 
 This pipeline takes assembled RNA-sequencing data (.gtf format) in human or mouse, and then will be able to assemble the data into transcripts, predict the transcripts starting from transposable elements, and calculate expression of the transcripts in comparison to the whole. 
+
+Please cite: 
 
 # Requirements
 
@@ -248,7 +256,7 @@ run_pipeline.sh -j <maximum jobs> -r <basename for gtf files> -t <treatment base
 
 All the subsequent steps will be run. 
 
-## 1. Setup arguments.txt
+## (1) Setup arguments.txt
 
 The locations of the reference files need to be specified in a tab delimitted file. There should be no extra lines or headers. Here is an example:
 
@@ -294,7 +302,7 @@ gencodeminusdic	/bar/nshah/reference/genecode_minus_hg38.dic
 Note:
 > If you do not want to use these options, remove them from the file. There should be no extra lines in the file or it will not work. 
 
-## 2. Run annotation on each GTF file
+## (2) Run annotation on each GTF file
 
 Run the Program
 
@@ -317,7 +325,7 @@ rmskhg38_annotate_gtf_update_test_tpm.py <gtffile> <argumentfile.txt>*
 
 Excel Document with Description of Columns: [External Link](https://wangftp.wustl.edu/~nshah/rnapipeline_public_link/Transcript%20Annotation%20Description.xlsx 'GTF Annotation Output')
 
-## 3. Process annotations files to get rough estimate of relative expression of transcript versus all other transcripts of gene
+## (3) Process annotations files to get rough estimate of relative expression of transcript versus all other transcripts of gene
 
 Run the program on the dataset desired. If you would like to stick to the selection of genes then run this on all the \<gtffile\>_annotated_filtered_test files. For all genes, run it on the \<gtffile\>_annotated_filtered_test_all files. 
 
@@ -332,7 +340,7 @@ Output File(s):
 >Three additional columns are made: (1) Maximum coverage of gene of interest (2) Maximum tpm of gene of interest (3) Total of gene of interest.
 >Note: For those transcripts that are from a TE but do not splice into a gene, these stats will be compared across all the transcripts like this. Thus the fraction will be very low.  
 
-## 4. Aggregate annotation samples across samples
+## (4) Aggregate annotation samples across samples
 
 To aggregate all the data across samples, we have an R script that will be able to aggregate the statistics and summarize an output.
 
@@ -559,7 +567,7 @@ mergeAnnotationProcess.R <options>
  
 (2) candidate_names.txt: The trnascript names for all candidate transcripts that are left
 
-(3) Step6.RData: Workspace file with data loaded from R session. Subsequent steps load this to save time.
+(3) Step10.RData: Workspace file with data loaded from R session. Subsequent steps load this to save time.
 
 Remove step 6 session data that is no longer needed.
 
@@ -576,7 +584,7 @@ Obtaining intron coverage information
 ```
 find . -name "*i_data.ctab" > ctab_i.txt
 
-cat ctab_i.txt | while read ID ; do fileid=$(echo "$ID" | awk -F "/" '{print $2}'); cat <(printf 'chr\tstrand\tstart\tend\t'${fileid/_stats/}'\n') <(grep -f candidate_introns.txt $ID | awk -F'\t' '{ print $2"\t"$3"\t"$4"\t"$5"\t"$6 }') > ${ID}_cand ; done ;
+cat ctab_i.txt | while read ID ; do fileid=$(echo "$ID" | awk -F "/" '{print $2}'); cat <(printf 'chr\tstrand\tstart\tend\t'${fileid/_stats/}'\n') <(grep -F -f candidate_introns.txt $ID | awk -F'\t' '{ print $2"\t"$3"\t"$4"\t"$5"\t"$6 }') > ${ID}_cand ; done ;
 
 cat <(find . -name "*i_data.ctab_cand" | head -1 | while read file ; do cat $file | awk '{print $1"\t"$2"\t"$3"\t"$4}' ; done;) > table_i_all
 

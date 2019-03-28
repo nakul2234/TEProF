@@ -4,7 +4,7 @@
 
 # Arguments to bash script to decide on various parameters
 MAXJOBS=6 #Cores per CPU
-READ1EXTENSION=".sortedByCoord.out.gtf"
+READ1EXTENSION=".gtf"
 TREATMENTLABEL="DAC"
 
 while [[ $# > 1 ]]
