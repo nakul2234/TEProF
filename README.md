@@ -1,4 +1,6 @@
-# **TEProF** (**T**ransposable **E**lement **Pro**moter **F**inder)  
+# **TEProF**  
+
+(**T**ransposable **E**lement **Pro**moter **F**inder) 
 
 # Outline
 
@@ -45,6 +47,8 @@ These scripts were the ones used in: http://dx.doi.org/10.1038/s41588-019-0373-3
 This pipeline takes assembled RNA-sequencing data (.gtf format) in human or mouse, and then will be able to assemble the data into transcripts, predict the transcripts starting from transposable elements, and calculate expression of the transcripts in comparison to the whole. 
 
 Please cite: 
+
+By: Nakul Shah
 
 # Requirements
 
