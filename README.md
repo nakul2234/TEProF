@@ -42,13 +42,9 @@
 
 TEProF v0.1
 
-These scripts were the ones used in: http://dx.doi.org/10.1038/s41588-019-0373-3
-
 This pipeline takes assembled RNA-sequencing data (.gtf format) in human or mouse, and then will be able to assemble the data into transcripts, predict the transcripts starting from transposable elements, and calculate expression of the transcripts in comparison to the whole. 
 
-Please cite: 
-
-By: Nakul Shah
+Please cite: http://dx.doi.org/10.1038/s41588-019-0373-3
 
 # Requirements
 
@@ -666,6 +662,6 @@ rm Step10.RData
 
 # Questions?
 
-If you have any questions, please contact: nakul.m.shah@wustl.edu
+If you have any questions, please contact: Nakul Shah- nakul.m.shah@wustl.edu
 
 
