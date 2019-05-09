@@ -36,6 +36,7 @@
          * [(A) Obtain annotations, filter by candidates identified previously, and identify major splicing intron](#a-obtain-annotations-filter-by-candidates-identified-previously-and-identify-major-splicing-intron)
          * [(B) Process stringtie transcript annotation files to get relevant information and aggregate](#b-process-stringtie-transcript-annotation-files-to-get-relevant-information-and-aggregate)
       * [11. Quantification processing, sample identification, and final table creation](#11-quantification-processing-sample-identification-and-final-table-creation)
+      * [12. Optional further analysis with ballgown](#12-optional-further-analysis-with-ballgown)
    * [Questions?](#questions)
 
 # Summary
@@ -60,13 +61,7 @@ python 2.7 (cPickle, pytabix 0.1)
 
 R >= 3.4.1 (ggplot2, bsgenome.hsapiens.ucsc.hg38 (or genome of your choosing), Xmisc, reshape2)
 
-Download a copy of this repo
-
-```
-git clone https://github.com/nakul2234/rnapipeline.git
-```
-
-Add the folder to your $PATH
+Uncompress and add this folder to your $PATH
 
 ## (2) Reference Files
 
@@ -500,13 +495,6 @@ mv ./merged_asm_full/merged.gtf reference_merged_candidates.gtf
 gffread -E reference_merged_candidates.gtf -o- > reference_merged_candidates.gff3
 ```
 
-Alternate Command sequence (This is now our preferred method)
-```
-gffcompare -r ~/reference/Gencode/gencode.v25.basic.annotation.gtf -A -o reference_merged_candidates_gffcompare candidate_transcripts.gtf ~/reference/Gencode/gencode.v25.basic.annotation.gtf
-gffread -E reference_merged_candidates_gffcompare.combined.gtf -o- > reference_merged_candidates.gff3
-cp reference_merged_candidates_gffcompare.combined.gtf reference_merged_candidates.gtf
-```
-
 ## 8. Annotate Merged GTF
 
 Using a lightly modified version of our previous annotation script, the new merged reference can be annotated for a final set of TE-gene candidates. 
@@ -646,10 +634,10 @@ finalStatisticsOutput.R <options>
 (1) All TE-derived Alternative Isoforms Statistics.xlsx: A file with the final statistics calculated for each candidate. There is also data on the gene expression in both groups (treatment and normal), fraction of gene expression (treatment and normal), the number of reads to main splicing intron (treatment and normal), and treatment enrichment.
 
 Note:
-> The **Treatment Count** and **Normal Count** columns are calculated based on the numberr of files in which the candidate passes the thresholds set on fraction of expression, total gene expression, and number of reads spanning the main splicing intron. The final table has all the
+> The **Treatment Count** and **Normal Count** columns are calculated based on the number of files in which the candidate passes the thresholds set on fraction of expression, total gene expression, and number of reads spanning the main splicing intron. The final table has all the
 > data used for this, so the user can try using different thresholds to optimize candidate presence based on their data. 
  
-(2) allCandidateStatistics.tsv: file with expression, fraction expression, and intron junction read information across all the samples for all the candidates. 
+(2) allCandidateStatistics.tsv: file with gene expression, fraction expression, transcript expression, and intron junction read information across all the samples for all the candidates. 
  
 (3) Step11.RData: Workspace file with data loaded from R session. Can be loaded by user to save time to do more advanced analysis. 
 
@@ -659,6 +647,19 @@ Remove old RData, the final one will have all data from previous ones.
 ```
 rm Step10.RData
 ```
+
+## 12. Optional further analysis with ballgown
+
+ [STRINGTIE](https://ccb.jhu.edu/software/stringtie/ 'stringtie') has a downstream analysis pipeline ([Ballgown](https://github.com/alyssafrazee/ballgown 'Ballgown Github')) that allows for transcript level and gene level expression analysis between samples.
+ In the folder that has the <*stats> folders run the following commands that will create a folder "ballgown" that will allow for you to do more traditional gene and transcript-level differential expression analysis. 
+
+```
+mkdir ballgown
+cd ballgown
+ls -d ../*_stats | while read file ; do mkdir $(basename $file) ; cd $(basename $file) ; (ls ../${file}/*ctab | while read file2 ; do ln -s $file2 ; done ;) ; cd .. ; done ;
+```
+
+There are also options to make this output compatible with more traditional statistical analysis tools. 
 
 # Questions?
 

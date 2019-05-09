@@ -155,6 +155,10 @@ annotatedcufftranscripts$tumor_genefpkm_mean <- apply(annotatedcufftranscripts[,
 
 annotatedcufftranscripts$normal_genefpkm_mean <- apply(annotatedcufftranscripts[,c('transcriptname','gene2')],1,function(x) mean(fracexpressiontable.m[fracexpressiontable.m$variable==x[1] & !grepl(parseTreatment,fracexpressiontable.m$TranscriptID), c('totexpression')]))
 
+annotatedcufftranscripts$tumor_transcriptfpkm_mean <- annotatedcufftranscripts$tumor_fracmean*annotatedcufftranscripts$tumor_genefpkm_mean
+
+annotatedcufftranscripts$normal_transcriptfpkm_mean <- annotatedcufftranscripts$normal_fracmean*annotatedcufftranscripts$normal_genefpkm_mean
+
 annotatedcufftranscripts$tumor_intronjuncount_mean <- apply(annotatedcufftranscripts[,c('transcriptname','gene2')],1,function(x) mean(fracexpressiontable.m[fracexpressiontable.m$variable==x[1] & grepl(parseTreatment,fracexpressiontable.m$TranscriptID), c('intronread')]))
 
 annotatedcufftranscripts$normal_intronjuncount_mean <- apply(annotatedcufftranscripts[,c('transcriptname','gene2')],1,function(x) mean(fracexpressiontable.m[fracexpressiontable.m$variable==x[1] & !grepl(parseTreatment,fracexpressiontable.m$TranscriptID), c('intronread')]))
@@ -180,23 +184,25 @@ annotatedcufftranscripts$familyTE <- TEfamily_v1
 
 ##The Candidates that are present in at least one sample
 
-exportTable2 <- annotatedcufftranscripts[,c("subfamTE", "classTE", "familyTE","chrTE", "startTE", "endTE", "exonintron1", "number1", "gene2", "exonintron2", "number2","strand","tumor_count", "normal_count", "tumor_fracmean", "normal_fracmean", "tumor_genefpkm_mean", "normal_genefpkm_mean", "tumor_intronjuncount_mean", "normal_intronjuncount_mean", "tumor_enrichment")]
+exportTable2 <- annotatedcufftranscripts[,c("transcriptname","subfamTE", "classTE", "familyTE","chrTE", "startTE", "endTE", "exonintron1", "number1", "gene2", "exonintron2", "number2","strand","tumor_count", "normal_count", "tumor_fracmean", "normal_fracmean", "tumor_genefpkm_mean", "normal_genefpkm_mean","tumor_transcriptfpkm_mean", "normal_transcriptfpkm_mean","tumor_intronjuncount_mean", "normal_intronjuncount_mean", "tumor_enrichment")]
 
 exportTable2$LocationTE <- paste0(exportTable2$exonintron1,'_',exportTable2$number1)
 exportTable2$LocationTE[exportTable2$LocationTE == "None_None"] <- "Intergenic"
 exportTable2$SpliceTarget <- paste0(exportTable2$exonintron2,'_',exportTable2$number2)
 
-exportTable2 <- exportTable2[,c("subfamTE", "classTE", "familyTE","chrTE", "startTE", "endTE", "LocationTE", "gene2", "SpliceTarget","strand","tumor_count", "normal_count", "tumor_fracmean", "normal_fracmean", "tumor_genefpkm_mean", "normal_genefpkm_mean", "tumor_intronjuncount_mean", "normal_intronjuncount_mean", "tumor_enrichment")]
+exportTable2 <- exportTable2[,c("transcriptname","subfamTE", "classTE", "familyTE","chrTE", "startTE", "endTE", "LocationTE", "gene2", "SpliceTarget","strand","tumor_count", "normal_count", "tumor_fracmean", "normal_fracmean", "tumor_genefpkm_mean", "normal_genefpkm_mean", "tumor_transcriptfpkm_mean", "normal_transcriptfpkm_mean", "tumor_intronjuncount_mean", "normal_intronjuncount_mean", "tumor_enrichment")]
 
-colnames(exportTable2) <- c('Subfam','Class',	'Family',	'Chr TE',	'Start TE',	'End TE',	'Location TE', 'Gene', 'Splice Target',	'Strand',	'Treatment Total',	'Normal Total', 'Fraction of Total Expression (Treatment)','Fraction of Total Expression (Normal)', 'Mean Gene Expression (Treatment)','Mean Gene Expression (Normal)','Mean Intron Read Count (Treatment)','Mean Intron Read Count (Normal)', 'Treatment Sample Enrichment')
+colnames(exportTable2) <- c('Transcript Name','Subfam','Class',	'Family',	'Chr TE',	'Start TE',	'End TE',	'Location TE', 'Gene', 'Splice Target',	'Strand',	'Treatment Total',	'Normal Total', 'Fraction of Total Expression (Treatment)','Fraction of Total Expression (Normal)', 'Mean Gene Expression (Treatment)','Mean Gene Expression (Normal)', 'Mean Transcript Expression (Treatment)','Mean Transcript Expression (Normal)','Mean Intron Read Count (Treatment)','Mean Intron Read Count (Normal)', 'Treatment Sample Enrichment')
 
 library(xlsx)
 exportTable2 <- exportTable2[order(-exportTable2$`Treatment Total`),]
 write.xlsx(exportTable2, "All TE-derived Alternative Isoforms Statistics.xlsx", row.names = FALSE)
 
+fracexpressiontable.m$transexpression <- fracexpressiontable.m$fractotal*fracexpressiontable.m$totexpression
+
 ##Expression, fraction expression, and intron coverage information across all of the files.
-exportAllStats <- fracexpressiontable.m[,c('TranscriptID', "variable", "totexpression", "fractotal", "intronread")]
-colnames(exportAllStats) <- c('File', 'Transcript_Name', 'Total Gene Expression (FPKM)', 'Fraction of Total Gene Expression (FPKM)', 'Intron Read Count')
+exportAllStats <- fracexpressiontable.m[,c('TranscriptID', "variable", "totexpression", "fractotal", "transexpression", "intronread")]
+colnames(exportAllStats) <- c('File', 'Transcript_Name', 'Total Gene Expression (FPKM)', 'Fraction of Total Gene Expression (FPKM)', 'Total Transcript Expression (FPKM)', 'Intron Read Count')
 write.table(exportAllStats, "allCandidateStatistics.tsv", sep = "\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
 
 ##Final image file 
